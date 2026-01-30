@@ -189,7 +189,7 @@ export default function DealAnalyzer() {
               size="lg"
               className="w-full"
               onClick={handleAnalyze}
-              disabled={isAnalyzing || !dealType || !amount}
+              disabled={isAnalyzing || !dealType || !amount || !!userId || !!plaidData}
             >
               {isAnalyzing ? (
                 <span className="flex items-center gap-2">
