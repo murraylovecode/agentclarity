@@ -75,7 +75,7 @@ export default function DealAnalyzer() {
       }
 
       const aiAxios = axios.create({
-        baseURL: "https://AdvaitChirmule2.pythonanywhere.com",
+        baseURL: "https://advaitchirmule2.pythonanywhere.com", withCredentials: true,
       });
 
       const response = await aiAxios.post("/chat", { user_data: userData, question: question, investment: investment, context: context });
