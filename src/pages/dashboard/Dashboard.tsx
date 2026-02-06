@@ -151,18 +151,19 @@ export default function Dashboard() {
   }, [userId, plaidData]);
 
   return (
-    <div className="p-6 lg:p-8 space-y-6 max-w-7xl mx-auto">
+    <div className="p-6 lg:p-8 space-y-6 max-w-7xl mx-auto" style={{ paddingTop: "calc(env(safe-area-inset-top) + 4rem)" }}>
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-semibold text-foreground">Dashboard</h1>
-          <p className="text-muted-foreground mt-1">
+          <p className="text-muted-foreground mt-1 sm:text-base">
             Your wealth at a glance — clarity over complexity
           </p>
         </div>
-        <Button variant="hero" size="lg" onClick={() => setDialogOpen(true)}>
+        <Button variant="hero" size="lg" className="sm:size-lg whitespace-nowrap" onClick={() => setDialogOpen(true)}>
           <Plus className="w-4 h-4" />
-          Add Asset
+          <span className="hidden sm:inline">Add Asset</span>
+          <span className="sm:hidden">Add</span>
         </Button>
       </div>
 

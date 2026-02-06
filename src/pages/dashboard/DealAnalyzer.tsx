@@ -110,7 +110,7 @@ export default function DealAnalyzer() {
   }
 
   return (
-    <div className="p-6 lg:p-8 space-y-6 max-w-5xl mx-auto">
+    <div className="p-6 lg:p-8 space-y-6 max-w-5xl mx-auto" style={{ paddingTop: "calc(env(safe-area-inset-top) + 4rem)" }}>
       {/* Header */}
       <div>
         <div className="flex items-center gap-3 mb-2">

@@ -62,7 +62,7 @@ export default function PlaidDashboard() {
   });
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-6 space-y-6" style={{ paddingTop: "calc(env(safe-area-inset-top) + 4rem)" }}>
       <h1 className="text-2xl font-bold">Bank & Investment Dashboard</h1>
 
       {/* Actions */}

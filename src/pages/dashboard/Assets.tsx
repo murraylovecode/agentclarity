@@ -81,7 +81,7 @@ export default function Assets() {
   const [selectedAsset, setSelectedAsset] = useState<Asset | null>(null);
 
   const { data: userId } = useQuery(queryUserId())
-  const assetsQuery = useQuery({...queryAssets(userId), enabled: !!userId})
+  const assetsQuery = useQuery({ ...queryAssets(userId), enabled: !!userId })
 
   useEffect(() => {
     if (userId && assetsQuery.data) {
@@ -118,7 +118,7 @@ export default function Assets() {
   };
 
   return (
-    <div className="p-6 lg:p-8 space-y-6 max-w-7xl mx-auto">
+    <div className="p-6 lg:p-8 space-y-6 max-w-7xl mx-auto" style={{ paddingTop: "calc(env(safe-area-inset-top) + 4rem)" }}>
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -129,7 +129,8 @@ export default function Assets() {
         </div>
         <Button variant="hero" size="lg" onClick={handleAddAsset}>
           <Plus className="w-4 h-4" />
-          Add Asset
+          <span className="hidden sm:inline">Add Asset</span>
+          <span className="sm:hidden">Add</span>
         </Button>
       </div>
 

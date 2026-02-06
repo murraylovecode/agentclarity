@@ -56,7 +56,7 @@ export default function Markets() {
   const totalValue = Object.values(investmentByType).reduce((sum, val) => sum + val, 0);
 
   return (
-    <div className="p-6 lg:p-8 space-y-6 max-w-7xl mx-auto">
+    <div className="p-6 lg:p-8 space-y-6 max-w-7xl mx-auto" style={{ paddingTop: "calc(env(safe-area-inset-top) + 4rem)" }}>
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -82,14 +82,13 @@ export default function Markets() {
       </Card>
 
       {/* Dynamic Investment Type Allocation */}
-      {/* Dynamic Investment Type Allocation */}
       <Card className="bg-white shadow-lg rounded-2xl overflow-hidden">
         <CardHeader>
           <CardTitle>Allocation by Type</CardTitle>
           <CardDescription>Your investments by type</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-4 gap-4 h-[400px]">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 h-[600px] md:h-[400px]">
             {sortedTypes.map((t, idx) => {
               const weight = totalValue ? ((t.value / totalValue) * 100).toFixed(1) : 0;
 
@@ -112,9 +111,9 @@ export default function Markets() {
                   className={`rounded-2xl p-6 flex flex-col justify-between shadow-md hover:shadow-xl transition-all transform hover:scale-[1.03] cursor-pointer ${colorClass} col-span-${idx === 0 ? 2 : 1} row-span-${idx === 0 ? 2 : 1}`}
                 >
                   <div>
-                    <p className="text-lg font-semibold">{t.type}</p>
-                    <p className="text-sm opacity-80">{weight}% of portfolio</p>
-                    <p className="text-sm font-mono">{formatCurrency(t.value)}</p>
+                    <p className="text-sm md:text-lg font-semibold">{t.type}</p>
+                    <p className="text-xs md:text-sm opacity-80">{weight}% of portfolio</p>
+                    <p className="text-xs md:text-sm font-mono">{formatCurrency(t.value)}</p>
                   </div>
                 </div>
               );
@@ -124,41 +123,49 @@ export default function Markets() {
       </Card>
 
 
-      {/* Top Holdings Table */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Top Holdings</CardTitle>
-          <CardDescription>Your largest positions</CardDescription>
-        </CardHeader>
-        <CardContent className="p-0">
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-border">
-                  <th className="text-left p-4 text-sm font-medium text-muted-foreground">Name</th>
-                  <th className="text-left p-4 text-sm font-medium text-muted-foreground">Institution</th>
-                  <th className="text-left p-4 text-sm font-medium text-muted-foreground">Type</th>
-                  <th className="text-right p-4 text-sm font-medium text-muted-foreground">Quantity</th>
-                  <th className="text-right p-4 text-sm font-medium text-muted-foreground">Price</th>
-                  <th className="text-right p-4 text-sm font-medium text-muted-foreground">Value</th>
+      <CardContent className="p-0">
+        <div className="overflow-x-auto">
+          <table className="w-full md:table-auto border-collapse md:border-separate">
+            {/* Table Head (desktop only) */}
+            <thead className="hidden md:table-header-group">
+              <tr className="border-b border-border">
+                <th className="text-left p-4 text-sm font-medium text-muted-foreground">Name</th>
+                <th className="text-left p-4 text-sm font-medium text-muted-foreground">Institution</th>
+                <th className="text-left p-4 text-sm font-medium text-muted-foreground">Type</th>
+                <th className="text-right p-4 text-sm font-medium text-muted-foreground">Quantity</th>
+                <th className="text-right p-4 text-sm font-medium text-muted-foreground">Price</th>
+                <th className="text-right p-4 text-sm font-medium text-muted-foreground">Value</th>
+              </tr>
+            </thead>
+
+            {/* Table Body */}
+            <tbody className="block md:table-row-group">
+              {investmentList.map((inv, idx) => (
+                <tr
+                  key={idx}
+                  className="block md:table-row border-b border-border last:border-0 mb-4 md:mb-0 rounded-lg md:rounded-none bg-muted/10 md:bg-transparent p-4 md:p-0 hover:bg-muted/30 transition-colors cursor-pointer"
+                >
+                  {/* Map each cell */}
+                  {inv.map((val, i) => (
+                    <td
+                      key={i}
+                      className="block md:table-cell p-2 md:p-4 text-left md:text-left font-medium text-foreground"
+                    >
+                      {/* Show label on mobile */}
+                      <span className="font-semibold md:hidden text-sm text-muted-foreground">
+                        {["Name", "Institution", "Type", "Quantity", "Price", "Value"][i]}:{" "}
+                      </span>
+                      {i === 4 || i === 5 ? formatCurrency(val) : val}
+                    </td>
+                  ))}
                 </tr>
-              </thead>
-              <tbody>
-                {investmentList.map((inv, idx) => (
-                  <tr key={idx} className="border-b border-border last:border-0 hover:bg-muted/30 transition-colors cursor-pointer">
-                    <td className="p-4 text-foreground">{inv[0]}</td>
-                    <td className="p-4 text-foreground">{inv[1]}</td>
-                    <td className="p-4 text-foreground">{inv[2]}</td>
-                    <td className="p-4 text-right font-medium text-foreground">{inv[3]}</td>
-                    <td className="p-4 text-right font-medium text-foreground">{formatCurrency(inv[4])}</td>
-                    <td className="p-4 text-right font-medium text-foreground">{formatCurrency(inv[5])}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </CardContent>
-      </Card>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </CardContent>
+
+
     </div>
   );
 }
