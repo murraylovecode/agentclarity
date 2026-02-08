@@ -23,6 +23,7 @@ import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 import PlaidDashboard from "./pages/dashboard/Plaid";
 import SharePage from "./pages/share/SharePage";
+import NotLoggedIn from "./pages/NotLoggedIn";
 
 const queryClient = new QueryClient();
 
@@ -40,6 +41,7 @@ const App = () => (
           <Route path="/admin/login" element={<AdminLogin />} />
           <Route path="/admin" element={<Admin />} />
           <Route path="/share/:shareId" element={<SharePage/>} />
+          <Route path="/notloggedin" element={<NotLoggedIn />}/>
           
           {/* App routes (with sidebar) */}
           <Route element={<DashboardLayout />}>

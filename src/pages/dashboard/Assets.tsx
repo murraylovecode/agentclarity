@@ -27,6 +27,7 @@ import { DeleteAssetDialog } from "@/components/assets/DeleteAssetDialog";
 import { useQuery } from "@tanstack/react-query";
 import { queryUserId } from "@/queries/auth";
 import { queryAssets } from "@/queries/assets";
+import { useNavigate } from "react-router-dom";
 
 type AssetType = Database["public"]["Enums"]["asset_type"];
 type Asset = Database["public"]["Tables"]["assets"]["Row"];
@@ -80,13 +81,18 @@ export default function Assets() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedAsset, setSelectedAsset] = useState<Asset | null>(null);
 
-  const { data: userId } = useQuery(queryUserId())
+  const { data: userId, isFetched } = useQuery(queryUserId())
   const assetsQuery = useQuery({ ...queryAssets(userId), enabled: !!userId })
+
+  const navigate = useNavigate()
 
   useEffect(() => {
     if (userId && assetsQuery.data) {
       setAssets(assetsQuery.data)
       setLoading(false)
+    }
+    else if (!userId && isFetched) {
+      navigate("/NotLoggedIn")
     }
   }, [userId, assetsQuery]);
 

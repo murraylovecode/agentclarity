@@ -21,6 +21,7 @@ import { useQuery } from "@tanstack/react-query";
 import { queryTransactions } from "@/queries/transactions";
 import { calculateAlternateAssetFromRawData, calculateBankBalancesFromRawData, calculateCashFromRawData, calculateCreditCardFromRawData, calculateDueLoanFromRawData, calculateDueMortgageFromRawData, calculateInvestmentsFromRawData, calculateLoanFromRawData, calculateMortgageFromRawData, calculateRealEstateFromRawData } from "@/utils/transactionHelpers";
 import { queryUserId } from "@/queries/auth";
+import { useNavigate } from "react-router-dom";
 
 // Demo data
 
@@ -113,8 +114,10 @@ export default function Dashboard() {
     setLongTermDebt(fullMortgageAmount + fullLoanAmount)
   }, [totalAmount, shortTermDebt, longTermDebt])
 
-  const { data: userId } = useQuery(queryUserId())
+  const { data: userId, isFetched } = useQuery(queryUserId())
   const { data: plaidData } = useQuery({ ...queryTransactions(userId), enabled: !!userId })
+
+  const navigate = useNavigate()
 
 
   useEffect(() => {
@@ -147,6 +150,9 @@ export default function Dashboard() {
       setFullLoanAmount(fullLoan)
 
       setLoadData(true)
+    }
+    else if (!userId && isFetched) {
+      navigate("/NotLoggedIn")
     }
   }, [userId, plaidData]);
 

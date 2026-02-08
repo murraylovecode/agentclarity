@@ -17,6 +17,7 @@ import { useQuery } from "@tanstack/react-query";
 import { queryUserId } from "@/queries/auth";
 import { queryTransactions } from "@/queries/transactions";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 interface AnalysisResult {
   fitScore: number;
@@ -35,8 +36,10 @@ export default function DealAnalyzer() {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysis, setAnalysis] = useState(false);
 
-  const { data: userId } = useQuery(queryUserId())
+  const { data: userId, isFetched } = useQuery(queryUserId())
   const { data: plaidData } = useQuery({ ...queryTransactions(userId), enabled: !!userId })
+
+  const navigate = useNavigate()
 
   const [allHistory, setAllHistory] = useState([])
   const [question, setQuestion] = useState("")
@@ -85,6 +88,9 @@ export default function DealAnalyzer() {
         setContext(response.data.context.at(-1))
         setQuestion("")
       }
+    }
+    else if (!userId && isFetched) {
+      navigate("/NotLoggedIn")
     }
     else {
       console.log(userId)

@@ -9,6 +9,7 @@ import { listBankBalancesFromRawData, listInvestmentsFromRawData } from "@/utils
 import { useQuery } from "@tanstack/react-query";
 import { queryTransactions } from "@/queries/transactions";
 import { queryUserId } from "@/queries/auth";
+import { useNavigate } from "react-router-dom";
 
 export default function PlaidDashboard() {
   const [linkToken, setLinkToken] = useState("");
@@ -26,8 +27,10 @@ export default function PlaidDashboard() {
     fetchLinkToken();
   }, []);
 
-  const { data: userId } = useQuery(queryUserId())
+  const { data: userId, isFetched } = useQuery(queryUserId())
   const { data: plaidData, refetch } = useQuery({ ...queryTransactions(userId), enabled: !!userId })
+
+  const navigate = useNavigate()
 
   useEffect(() => {
     if (userId && plaidData) {
@@ -36,6 +39,9 @@ export default function PlaidDashboard() {
 
       setBankNames(listBankBalances);
       setInvestmentNames(listInvestments);
+    }
+    else if (!userId && isFetched) {
+      navigate("/NotLoggedIn")
     }
   }, [userId, plaidData]);
 

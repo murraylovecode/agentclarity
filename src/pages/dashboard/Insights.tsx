@@ -15,6 +15,7 @@ import { useQuery } from "@tanstack/react-query";
 import { queryUserId } from "@/queries/auth";
 import { queryPastTransactions, queryTransactions } from "@/queries/transactions";
 import { calculateAlternateAssetFromRawData, calculateBankBalancesFromRawData, calculateCashFromRawData, calculateInvestmentsFromRawData, calculateRealEstateFromRawData } from "@/utils/transactionHelpers";
+import { useNavigate } from "react-router-dom";
 
 
 function formatCurrency(value: number) {
@@ -44,9 +45,11 @@ export default function Insights() {
 
   const [loadData, setLoadData] = useState(false);
 
-  const { data: userId } = useQuery(queryUserId());
-  const { data: plaidData } = useQuery({ ...queryTransactions(userId), enabled: !!userId });
+  const { data: userId, isFetched } = useQuery(queryUserId())
+  const { data: plaidData } = useQuery({ ...queryTransactions(userId), enabled: !!userId })
   const { data: pastData } = useQuery({ ...queryPastTransactions(userId), enabled: !!userId });
+
+  const navigate = useNavigate()
 
   useEffect(() => {
     if (userId && plaidData && pastData) {
@@ -70,6 +73,9 @@ export default function Insights() {
       setAlternateAssets(totalAlternateAsset)
 
       setLoadData(true);
+    }
+    else if (!userId && isFetched) {
+      navigate("/NotLoggedIn")
     }
   }, [userId, plaidData, pastData]);
 

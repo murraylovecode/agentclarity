@@ -7,6 +7,7 @@ import { queryTransactions } from "@/queries/transactions";
 import { queryUserId } from "@/queries/auth";
 import axios from "axios";
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 const INVESTMENT_TYPES = ["derivative", "etf", "mutual fund", "cryptocurrency", "equity", "fixed income", "cash"];
 
@@ -35,8 +36,10 @@ export default function Markets() {
 
   axios.defaults.baseURL = "https://agentclarity.onrender.com";
 
-  const { data: userId } = useQuery(queryUserId());
-  const { data: plaidData } = useQuery({ ...queryTransactions(userId), enabled: !!userId });
+  const { data: userId, isFetched } = useQuery(queryUserId())
+  const { data: plaidData } = useQuery({ ...queryTransactions(userId), enabled: !!userId })
+
+  const navigate = useNavigate()
 
   useEffect(() => {
     if (userId && plaidData) {
@@ -45,6 +48,9 @@ export default function Markets() {
       setInvestmentList(list);
       setInvestmentByType(byType);
       setLoadData(true);
+    }
+    else if (!userId && isFetched) {
+      navigate("/NotLoggedIn")
     }
   }, [userId, plaidData]);
 

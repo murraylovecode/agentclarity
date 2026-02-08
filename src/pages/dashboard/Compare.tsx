@@ -20,6 +20,7 @@ import { useQuery } from "@tanstack/react-query";
 import { calculateAlternateAssetFromRawData, calculateBankBalancesFromRawData, calculateCashFromRawData, calculateInvestmentsFromRawData, calculateRealEstateFromRawData } from "@/utils/transactionHelpers";
 import { queryTransactions } from "@/queries/transactions";
 import { queryUserId } from "@/queries/auth";
+import { useNavigate } from "react-router-dom";
 
 const sharedProfiles = [
   {
@@ -75,8 +76,10 @@ export default function Compare() {
 
   axios.defaults.baseURL = "https://agentclarity.onrender.com";
 
-  const { data: userId } = useQuery(queryUserId())
-  const { data: plaidData, isFetched } = useQuery({...queryTransactions(userId), enabled: !!userId})
+  const { data: userId, isFetched } = useQuery(queryUserId())
+  const { data: plaidData } = useQuery({ ...queryTransactions(userId), enabled: !!userId })
+
+  const navigate = useNavigate()
 
 
   useEffect(() => {
@@ -94,6 +97,9 @@ export default function Compare() {
       setAlternateAssets(totalAlternateAsset)
 
       setLoadData(true)
+    }
+    else if (!userId && isFetched) {
+      navigate("/NotLoggedIn")
     }
   }, [userId, plaidData]);
 
