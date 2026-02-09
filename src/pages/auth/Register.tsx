@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { AuthLayout } from "@/components/layout/AuthLayout";
 import { Button } from "@/components/ui/button";
@@ -8,6 +8,8 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Eye, EyeOff, Mail, Lock, User, ArrowRight, Check } from "lucide-react";
 import { supabase } from "@/lib/supabase/client";
 import { toast } from "sonner";
+import { useQuery } from "@tanstack/react-query";
+import { queryUserId } from "@/queries/auth";
 
 const features = [
   "Simple, clear wealth reporting",
@@ -24,6 +26,14 @@ export default function Register() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [acceptTerms, setAcceptTerms] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+
+  const { data: userId, isFetched } = useQuery(queryUserId())
+
+  useEffect(() => {
+    if (isFetched && userId) {
+      navigate("/dashboard")
+    }
+  })
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

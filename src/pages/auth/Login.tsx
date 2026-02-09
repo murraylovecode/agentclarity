@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { AuthLayout } from "@/components/layout/AuthLayout";
 import { Button } from "@/components/ui/button";
@@ -7,6 +7,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Eye, EyeOff, Mail, Lock, ArrowRight } from "lucide-react";
 import { supabase } from "@/lib/supabase/client";
 import { toast } from "sonner";
+import { queryUserId } from "@/queries/auth";
+import { useQuery } from "@tanstack/react-query";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -14,6 +16,14 @@ export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+
+  const { data: userId, isFetched } = useQuery(queryUserId())
+
+  useEffect(() => {
+    if (isFetched && userId) {
+      navigate("/dashboard")
+    }
+  })
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

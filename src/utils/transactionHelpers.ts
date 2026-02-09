@@ -2,6 +2,7 @@ export function calculateBankBalancesFromRawData(balancesRes) {
     let totalBankBalances = 0
 
     if (balancesRes.data.accounts) {
+        console.log(balancesRes.data)
         for (let item of balancesRes.data.accounts) {
             const account = item[1].accounts;
             for (let acc of account) {
@@ -16,6 +17,7 @@ export function calculateBankBalancesFromRawData(balancesRes) {
 export function calculateInvestmentsFromRawData(investmentsRes) {
     let totalInvestment = 0
     if (investmentsRes.data.investments) {
+        console.log(investmentsRes.data)
         for (let item of investmentsRes.data.investments) {
             const holdings = item[1].holdings;
             for (let holding of holdings) {

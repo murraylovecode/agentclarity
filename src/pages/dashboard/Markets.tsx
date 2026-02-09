@@ -6,7 +6,7 @@ import { calculateSecuritiesByType, listInvestmentsFromRawData } from "@/utils/t
 import { queryTransactions } from "@/queries/transactions";
 import { queryUserId } from "@/queries/auth";
 import axios from "axios";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 const INVESTMENT_TYPES = ["derivative", "etf", "mutual fund", "cryptocurrency", "equity", "fixed income", "cash"];
@@ -40,6 +40,46 @@ export default function Markets() {
   const { data: plaidData } = useQuery({ ...queryTransactions(userId), enabled: !!userId })
 
   const navigate = useNavigate()
+
+  const [sortConfig, setSortConfig] = useState<{ key: number; direction: "asc" | "desc" } | null>(null);
+
+  // Memoize sorted list
+  const sortedInvestmentList = useMemo(() => {
+    console.log("hi2")
+    if (!sortConfig) return investmentList;
+
+    const sorted = [...investmentList].sort((a, b) => {
+      const valA = a[sortConfig.key];
+      const valB = b[sortConfig.key];
+
+      // Handle numbers vs strings
+      if (typeof valA === "number" && typeof valB === "number") {
+        return sortConfig.direction === "asc" ? valA - valB : valB - valA;
+      }
+
+      // String comparison
+      return sortConfig.direction === "asc"
+        ? String(valA).localeCompare(String(valB))
+        : String(valB).localeCompare(String(valA));
+    });
+
+    return sorted;
+  }, [investmentList, sortConfig]);
+
+  // Click handler for headers
+  const handleSort = (key: number) => {
+    if (sortConfig?.key === key) {
+      // Toggle direction
+      setSortConfig({
+        key,
+        direction: sortConfig.direction === "asc" ? "desc" : "asc",
+      });
+    } else {
+      // New column, default ascending
+      setSortConfig({ key, direction: "asc" });
+    }
+  };
+
 
   useEffect(() => {
     if (userId && plaidData) {
@@ -135,18 +175,28 @@ export default function Markets() {
             {/* Table Head (desktop only) */}
             <thead className="hidden md:table-header-group">
               <tr className="border-b border-border">
-                <th className="text-left p-4 text-sm font-medium text-muted-foreground">Name</th>
-                <th className="text-left p-4 text-sm font-medium text-muted-foreground">Institution</th>
-                <th className="text-left p-4 text-sm font-medium text-muted-foreground">Type</th>
-                <th className="text-right p-4 text-sm font-medium text-muted-foreground">Quantity</th>
-                <th className="text-right p-4 text-sm font-medium text-muted-foreground">Price</th>
-                <th className="text-right p-4 text-sm font-medium text-muted-foreground">Value</th>
+                {["Name", "Institution", "Type", "Quantity", "Price", "Value"].map((col, idx) => (
+                  <th
+                    key={idx}
+                    className="text-left p-4 text-sm font-medium text-muted-foreground cursor-pointer select-none"
+                    onClick={() => handleSort(idx)}
+                  >
+                    <div className="flex items-center gap-1">
+                      {col}
+                      {/* Show arrow */}
+                      {sortConfig?.key === idx && (
+                        <span>{sortConfig.direction === "asc" ? "▲" : "▼"}</span>
+                      )}
+                    </div>
+                  </th>
+                ))}
               </tr>
             </thead>
 
+
             {/* Table Body */}
             <tbody className="block md:table-row-group">
-              {investmentList.map((inv, idx) => (
+              {sortedInvestmentList.map((inv, idx) => (
                 <tr
                   key={idx}
                   className="block md:table-row border-b border-border last:border-0 mb-4 md:mb-0 rounded-lg md:rounded-none bg-muted/10 md:bg-transparent p-4 md:p-0 hover:bg-muted/30 transition-colors cursor-pointer"
