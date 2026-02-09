@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/lib/supabase/client";
 import { toast } from "sonner";
 import { Database } from "@/integrations/supabase/types";
-import { addAsset } from "@/lib/supabase/assets/assets";
+import { addAsset, editAsset } from "@/lib/supabase/assets/assets";
 import { UserRoundIcon } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { queryUserId } from "@/queries/auth";
@@ -49,7 +49,7 @@ export function AssetDialog({ open, onOpenChange, asset, onSuccess }: AssetDialo
     if (asset) {
       setName(asset.name);
       setType(asset.type);
-      setValue(asset.current_value.toString());
+      setValue(asset.value.toString());
     } else {
       setName("");
       setType("cash");
@@ -62,25 +62,16 @@ export function AssetDialog({ open, onOpenChange, asset, onSuccess }: AssetDialo
     setLoading(true);
 
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        toast.error("You must be logged in");
-        return;
-      }
 
-      const assetData = {
-        name: name.trim(),
-        type,
-        current_value: parseFloat(value),
-        user_id: userId,
-      };
-
-      if (isEdit && asset && userId) {
-        await addAsset(userId, name, type, parseFloat(value))
-        toast.success("Asset updated successfully");
-      } else {
-        await addAsset(userId, name, type, parseFloat(value))
-        toast.success("Asset added successfully");
+      if (userId) {
+        if (isEdit) {
+          await editAsset(userId, name, type, parseFloat(value))
+          toast.success("Asset updated successfully");
+        }
+        else {
+          await addAsset(userId, name, type, parseFloat(value))
+          toast.success("Asset added successfully");
+        }
       }
 
       onSuccess();
@@ -111,12 +102,13 @@ export function AssetDialog({ open, onOpenChange, asset, onSuccess }: AssetDialo
                 onChange={(e) => setName(e.target.value)}
                 placeholder="e.g., Apple Inc (AAPL)"
                 required
+                disabled={isEdit}
               />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="grid gap-2">
                 <Label htmlFor="type">Asset Type</Label>
-                <Select value={type} onValueChange={(v) => setType(v as AssetType)}>
+                <Select value={type} onValueChange={(v) => setType(v as AssetType)} disabled={isEdit}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select type" />
                   </SelectTrigger>

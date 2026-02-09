@@ -2,6 +2,9 @@ import { useState } from "react";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { supabase } from "@/lib/supabase/client";
 import { toast } from "sonner";
+import { deleteAsset } from "@/lib/supabase/assets/assets";
+import { useQuery } from "@tanstack/react-query";
+import { queryUserId } from "@/queries/auth";
 
 interface DeleteAssetDialogProps {
   open: boolean;
@@ -13,19 +16,16 @@ interface DeleteAssetDialogProps {
 export function DeleteAssetDialog({ open, onOpenChange, asset, onSuccess }: DeleteAssetDialogProps) {
   const [loading, setLoading] = useState(false);
 
+  const { data: userId } = useQuery(queryUserId())
+
   const handleDelete = async () => {
     if (!asset) return;
     
     setLoading(true);
     try {
-      const { error } = await supabase
-        .from("assets")
-        .delete()
-        .eq("id", asset.id);
-
-      if (error) throw error;
-      
+      await deleteAsset(userId, asset.name, asset.type, parseFloat(asset.value))
       toast.success("Asset deleted successfully");
+
       onSuccess();
       onOpenChange(false);
     } catch (error: any) {
