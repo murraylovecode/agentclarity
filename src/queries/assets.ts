@@ -1,5 +1,5 @@
-import { getAssets } from "@/lib/supabase/assets/assets";
 import { queryOptions } from "@tanstack/react-query";
+import axios from "axios";
 
 export function queryAssets(userId: string) {
     return queryOptions({
@@ -9,7 +9,7 @@ export function queryAssets(userId: string) {
 }
 
 async function getAssetsForUser(userId: string) {
-    const data = await getAssets(userId)
+    const data = await axios.post("/getAllAssets", { user_id: userId })
 
     return data
 

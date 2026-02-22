@@ -23,7 +23,7 @@ export function DeleteAssetDialog({ open, onOpenChange, asset, onSuccess }: Dele
     
     setLoading(true);
     try {
-      await deleteAsset(userId, asset.name, asset.type, parseFloat(asset.value))
+      await deleteAsset(userId, asset.name, asset.type)
       toast.success("Asset deleted successfully");
 
       onSuccess();

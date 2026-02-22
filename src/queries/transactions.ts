@@ -1,4 +1,3 @@
-import { getAssets } from "@/lib/supabase/assets/assets";
 import { getPastData } from "@/lib/supabase/past/getPastData";
 import { queryOptions } from "@tanstack/react-query";
 import axios from "axios";
@@ -15,11 +14,11 @@ async function extractData(userId: string) {
     const investmentsRes = await axios.post("/getAllInvestments", { user_id: userId });
     const liabilitiesRes = await axios.post("/getAllLiabilities", { user_id: userId })
     const transactionsRes = await axios.post("/getAllTransactions", { user_id: userId })
-    const otherRes = await getAssets(userId)
+    const assetsRes = await axios.post("/getAllAssets", { user_id: userId })
 
-    console.log(otherRes)
+    console.log(assetsRes)
 
-    return [balancesRes, investmentsRes, liabilitiesRes, transactionsRes, otherRes]
+    return [balancesRes, investmentsRes, liabilitiesRes, transactionsRes, assetsRes]
 }
 
 export function queryPastTransactions(userId: string) {

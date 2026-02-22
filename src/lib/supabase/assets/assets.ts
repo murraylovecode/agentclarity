@@ -1,42 +1,19 @@
 import { supabase } from "../client";
+import axios from "axios";
 
 export async function addAsset(userId: string, name: string, type: string, value: number) {
-    const { data, error } = await supabase
-    .from("user_assets")
-    .insert({
-        "user_id": userId,
-        "name": name,
-        "type": type,
-        "value": value
-    })
-}
-
-export async function getAssets(userId: string) {
-    const { data, error } = await supabase
-    .from("user_assets")
-    .select("*")
-    .eq("user_id", userId)
-
-    return data
+    const response = await axios.post("/addAssets", { user_id: userId, name: name, type: type, value: value })
+    console.log(response)
 }
 
 export async function editAsset(userId: string, name: string, type: string, newValue: number) {
 
-    const { error } = await supabase
-    .from("user_assets")
-    .update({ "value": newValue })
-    .eq("user_id", userId)
-    .eq("type", type)
-    .eq("name", name);
+    const response = await axios.post("/editAssets", { user_id: userId, name: name, type: type, new_value: newValue })
+    console.log(response)
 }
 
-export async function deleteAsset(userId: string, name: string, type: string, value: number) {
+export async function deleteAsset(userId: string, name: string, type: string) {
 
-    const { error } = await supabase
-    .from("user_assets")
-    .delete()
-    .eq("user_id", userId)
-    .eq("type", type)
-    .eq("name", name)
-    .eq("value", value);
+    const response = await axios.post("/deleteAssets", { user_id: userId, name: name, type: type })
+    console.log(response)
 }
