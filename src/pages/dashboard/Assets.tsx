@@ -110,7 +110,6 @@ export default function Assets() {
 
   const handleAddAsset = () => {
     setSelectedAsset(null);
-    console.log("okay at least here")
     setDialogOpen(true);
   };
 

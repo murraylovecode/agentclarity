@@ -69,6 +69,8 @@ export function calculateAlternateAssetFromRawData(otherRes) {
 }
 
 export function calculateCreditCardFromRawData(liabilitiesRes) {
+    console.log("hi")
+    console.log(liabilitiesRes)
     let totalCreditCard = 0
     if (liabilitiesRes.data.liabilities) {
         for (let item of liabilitiesRes.data.liabilities) {
@@ -82,7 +84,22 @@ export function calculateCreditCardFromRawData(liabilitiesRes) {
     return totalCreditCard
 }
 
+export function calculateDebtCreditCardFromRawData(liabilitiesRes) {
+    let allCredit = []
+    if (liabilitiesRes.data.liabilities) {
+        for (let item of liabilitiesRes.data.liabilities) {
+            const credits = item[1].liabilities.credit
+            for (let credit of credits) {
+                allCredit.push([credit.last_statement_balance, credit.minimum_payment_amount, 15.24, "credit" + item[0]])
+            }
+        }
+    }
+
+    return allCredit
+}
+
 export function calculateMortgageFromRawData(liabilitiesRes) {
+    console.log(liabilitiesRes)
     let totalMortgage = 0
     if (liabilitiesRes.data.liabilities) {
         for (let item of liabilitiesRes.data.liabilities) {
@@ -108,6 +125,20 @@ export function calculateDueMortgageFromRawData(liabilitiesRes) {
     }
 
     return totalFullMortgage
+}
+
+export function calculateDebtMortgageFromRawData(liabilitiesRes) {
+    let allMortgage = []
+    if (liabilitiesRes.data.liabilities) {
+        for (let item of liabilitiesRes.data.liabilities) {
+            const mortgages = item[1].liabilities.mortgage
+            for (let mortgage of mortgages) {
+                allMortgage.push([mortgage.origination_principal_amount - mortgage.ytd_principal_paid, mortgage.next_monthly_payment, mortgage.interest_rate.percentage, "mortgage" + item[0]])
+            }
+        }
+    }
+
+    return allMortgage
 }
 
 export function calculateLoanFromRawData(liabilitiesRes) {
@@ -136,6 +167,20 @@ export function calculateDueLoanFromRawData(liabilitiesRes) {
     }
 
     return totalFullLoan
+}
+
+export function calculateDebtLoanFromRawData(liabilitiesRes) {
+    let allLoan = []
+    if (liabilitiesRes.data.liabilities) {
+        for (let item of liabilitiesRes.data.liabilities) {
+            const loans = item[1].liabilities.student
+            for (let loan of loans) {
+                allLoan.push([loan.origination_principal_amount + loan.outstanding_interest_amount - loan.ytd_principal_paid - loan.ytd_interest_paid, loan.minimum_payment_amount, loan.interest_rate_percentage, "loan" + item[0]])
+            }
+        }
+    }
+
+    return allLoan
 }
 
 export function listBankBalancesFromRawData(balancesRes) {

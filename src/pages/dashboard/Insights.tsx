@@ -14,8 +14,9 @@ import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { queryUserId } from "@/queries/auth";
 import { queryPastTransactions, queryTransactions } from "@/queries/transactions";
-import { calculateAlternateAssetFromRawData, calculateBankBalancesFromRawData, calculateCashFromRawData, calculateInvestmentsFromRawData, calculateRealEstateFromRawData } from "@/utils/transactionHelpers";
+import { calculateAlternateAssetFromRawData, calculateBankBalancesFromRawData, calculateCashFromRawData, calculateDebtCreditCardFromRawData, calculateDebtLoanFromRawData, calculateDebtMortgageFromRawData, calculateInvestmentsFromRawData, calculateRealEstateFromRawData } from "@/utils/transactionHelpers";
 import { useNavigate } from "react-router-dom";
+import { LineChart, Legend, Line, Tooltip, XAxis, YAxis, ResponsiveContainer } from "recharts";
 
 
 function formatCurrency(value: number) {
@@ -27,6 +28,62 @@ function formatCurrency(value: number) {
     maximumFractionDigits: 0,
   }).format(Math.abs(value));
 }
+
+function calculateAvalanche(debts, monthlyBudget) {
+  const results = []
+  let month = 0
+
+  const activeDebts = debts.map(d => ({ ...d }))
+
+  while (activeDebts.some(d => d[0] > 0) && month < 6000) {
+    month++
+
+    // Sort by highest interest first
+    activeDebts.sort((a, b) => b[2] - a[2])
+
+    let remaining = monthlyBudget
+
+    // Add interest
+    activeDebts.forEach(debt => {
+      if (debt[0] > 0) {
+        const monthlyInterest = debt[0] * (debt[2] / 100 / 12)
+        debt[0] += monthlyInterest
+      }
+    })
+
+    // Pay minimums
+    activeDebts.forEach(debt => {
+      if (debt[0] > 0) {
+        const payment = Math.min(debt[1], debt[0])
+        debt[0] -= payment
+        remaining -= payment
+      }
+    })
+
+    // Avalanche extra payment
+    for (let debt of activeDebts) {
+      if (remaining <= 0) break
+      if (debt[0] > 0) {
+        const payment = Math.min(remaining, debt[0])
+        debt[0] -= payment
+        remaining -= payment
+      }
+    }
+
+    // Save snapshot
+    results.push({
+      month,
+      balances: activeDebts.map(d => ({
+        name: d[3],
+        balance: Math.max(d[0], 0)
+      }))
+    })
+  }
+
+
+  return results
+}
+
 
 export default function Insights() {
   axios.defaults.baseURL = "https://agentclarity.onrender.com";
@@ -45,11 +102,15 @@ export default function Insights() {
 
   const [loadData, setLoadData] = useState(false);
 
+  const [monthlyBudget, setMonthlyBudget] = useState(12000)
+
   const { data: userId, isFetched } = useQuery(queryUserId())
   const { data: plaidData } = useQuery({ ...queryTransactions(userId), enabled: !!userId })
   const { data: pastData } = useQuery({ ...queryPastTransactions(userId), enabled: !!userId });
 
   const navigate = useNavigate()
+
+  const [formattedData, setFormattedData] = useState<any[]>([])
 
   useEffect(() => {
     if (userId && plaidData && pastData) {
@@ -72,12 +133,29 @@ export default function Insights() {
       setRealEstateAmount(totalRealEstate)
       setAlternateAssets(totalAlternateAsset)
 
+      const paymentData = calculateAvalanche([...calculateDebtCreditCardFromRawData(plaidData[2]), ...calculateDebtMortgageFromRawData(plaidData[2]), ...calculateDebtLoanFromRawData(plaidData[2])], monthlyBudget)
+
+      console.log(paymentData)
+      const formatted = []
+
+      paymentData.forEach((month) => {
+        const row: Record<string, number> = { month: month.month }
+
+        month.balances.forEach((d) => {
+          row[d.name] = d.balance
+        })
+
+        formatted.push(row)
+      })
+
+      setFormattedData(formatted)
+
       setLoadData(true);
     }
     else if (!userId && isFetched) {
       navigate("/NotLoggedIn")
     }
-  }, [userId, plaidData, pastData]);
+  }, [userId, plaidData, pastData, monthlyBudget]);
 
   const formatCurrency = (value: number) =>
     new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", minimumFractionDigits: 0 }).format(value);
@@ -158,6 +236,11 @@ export default function Insights() {
     { current: alternateAssets, past: alternateAssetsPast, label: "Alternate Assets" },
   ];
 
+  const debtKeys =
+    formattedData.length > 0
+      ? Object.keys(formattedData[0]).filter((key) => key !== "month")
+      : []
+
   return (
     <div className="p-6 lg:p-8 max-w-6xl mx-auto" style={{ paddingTop: "calc(env(safe-area-inset-top) + 4rem)" }}>
       <div className="flex items-center gap-3 mb-4">
@@ -169,14 +252,71 @@ export default function Insights() {
       <p className="text-muted-foreground mb-6">Visual comparison of current vs past financials</p>
 
       {loadData && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {fields.map((field, index) => (
-            <Card key={index} className="p-4 flex flex-col items-center justify-center">
-              {renderChart(field.past, field.current)}
-              <p className="text-sm text-center mt-4">{generateAnalysis(field.current, field.past, field.label)}</p>
+        <div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {fields.map((field, index) => (
+              <Card key={index} className="p-4 flex flex-col items-center justify-center">
+                {renderChart(field.past, field.current)}
+                <p className="text-sm text-center mt-4">{generateAnalysis(field.current, field.past, field.label)}</p>
+              </Card>
+            ))}
+            <Card className="p-4 m-5 w-100 sm:col-span-2 lg:col-span-3">
+              <div className="mt-4">
+                <div className="mb-5">On a budget of {formatCurrency(monthlyBudget)}, this is how you your debts would look like over months:</div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Adjust Monthly Budget:
+                </label>
+                <div className="flex items-center gap-2 mb-5">
+                  {/* Decrease button */}
+                  <button
+                    type="button"
+                    className="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300"
+                    onClick={() => setMonthlyBudget((prev) => Math.max(prev - 100, 0))}
+                  >
+                    -
+                  </button>
+
+                  {/* Number input */}
+                  <input
+                    type="number"
+                    value={monthlyBudget}
+                    onChange={(e) => setMonthlyBudget(Number(e.target.value))}
+                    className="w-24 text-center border rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-accent"
+                  />
+
+                  {/* Increase button */}
+                  <button
+                    type="button"
+                    className="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300"
+                    onClick={() => setMonthlyBudget((prev) => prev + 100)}
+                  >
+                    +
+                  </button>
+                </div>
+              </div>
+
+              <ResponsiveContainer width="100%" height={400}>
+                <LineChart data={formattedData}>
+                  <XAxis dataKey="month" />
+                  <YAxis />
+                  <Tooltip />
+                  <Legend />
+                  {debtKeys.map((key, index) => (
+                    <Line
+                      key={key}
+                      type="monotone"
+                      dataKey={key}
+                      dot={true}
+                      strokeWidth={2}
+                    />
+                  ))}
+                </LineChart>
+              </ResponsiveContainer>
             </Card>
-          ))}
+          </div>
+
         </div>
+
       )}
     </div>
   );
