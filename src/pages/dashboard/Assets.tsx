@@ -88,7 +88,8 @@ export default function Assets() {
 
   useEffect(() => {
     if (userId && assetsQuery.data) {
-      setAssets(assetsQuery.data)
+      console.log(assetsQuery.data.data.data)
+      setAssets(assetsQuery.data.data.data)
       setLoading(false)
     }
     else if (!userId && isFetched) {
