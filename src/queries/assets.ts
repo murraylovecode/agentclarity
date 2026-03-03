@@ -11,7 +11,7 @@ export function queryAssets(userId: string) {
 }
 
 async function getAssetsForUser(accessToken: string) {
-    const data = await axios.post("/getAllAssets", {}, { headers: { Authorization: accessToken }})
+    const data = await axios.post("/getAllAssets", {}, { headers: { Authorization: `Bearer: ${accessToken}` }})
     return data
 
 }

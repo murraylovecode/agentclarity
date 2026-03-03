@@ -93,9 +93,6 @@ export default function DealAnalyzer() {
       navigate("/NotLoggedIn")
     }
     else {
-      console.log(accessToken)
-      console.log(plaidData)
-      console.log(question)
       console.log("wait more")
     }
   }

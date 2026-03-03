@@ -83,7 +83,6 @@ export default function Compare() {
     let randomLink = Math.random().toString(36).substring(7)
 
     while (await checkRandomId(randomLink)) {
-      console.log(randomLink)
       randomLink = Math.random().toString(36).substring(7)
     }
 

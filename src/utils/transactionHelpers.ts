@@ -2,7 +2,7 @@ export function calculateBankBalancesFromRawData(balancesRes) {
     let totalBankBalances = 0
 
     if (balancesRes.data.accounts) {
-        console.log(balancesRes.data)
+
         for (let item of balancesRes.data.accounts) {
             const account = item[1].accounts;
             for (let acc of account) {
@@ -17,7 +17,6 @@ export function calculateBankBalancesFromRawData(balancesRes) {
 export function calculateInvestmentsFromRawData(investmentsRes) {
     let totalInvestment = 0
     if (investmentsRes.data.investments) {
-        console.log(investmentsRes.data)
         for (let item of investmentsRes.data.investments) {
             const holdings = item[1].holdings;
             for (let holding of holdings) {
@@ -69,8 +68,6 @@ export function calculateAlternateAssetFromRawData(otherRes) {
 }
 
 export function calculateCreditCardFromRawData(liabilitiesRes) {
-    console.log("hi")
-    console.log(liabilitiesRes)
     let totalCreditCard = 0
     if (liabilitiesRes.data.liabilities) {
         for (let item of liabilitiesRes.data.liabilities) {
@@ -99,7 +96,6 @@ export function calculateDebtCreditCardFromRawData(liabilitiesRes) {
 }
 
 export function calculateMortgageFromRawData(liabilitiesRes) {
-    console.log(liabilitiesRes)
     let totalMortgage = 0
     if (liabilitiesRes.data.liabilities) {
         for (let item of liabilitiesRes.data.liabilities) {
@@ -220,10 +216,8 @@ export function calculateSecuritiesByType(investmentsRes) {
     for (let item of investmentsRes.data.investments) {
         const securities = item[1].securities;
         const holdings = item[1].holdings;
-        console.log(holdings)
         for (let i=0; i < holdings.length; i++) {
             if (result[securities[i].type]) {
-                console.log("hi", securities[i].type)
                 result[securities[i].type] += holdings[i].institution_value * holdings[i].quantity
             }
             else {

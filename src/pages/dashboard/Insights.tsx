@@ -12,7 +12,7 @@ import {
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { queryAccessToken } from "@/queries/auth";
+import { queryAccessToken, queryUserId } from "@/queries/auth";
 import { queryPastTransactions, queryTransactions } from "@/queries/transactions";
 import { calculateAlternateAssetFromRawData, calculateBankBalancesFromRawData, calculateCashFromRawData, calculateDebtCreditCardFromRawData, calculateDebtLoanFromRawData, calculateDebtMortgageFromRawData, calculateInvestmentsFromRawData, calculateRealEstateFromRawData } from "@/utils/transactionHelpers";
 import { useNavigate } from "react-router-dom";
@@ -105,8 +105,9 @@ export default function Insights() {
   const [monthlyBudget, setMonthlyBudget] = useState(12000)
 
   const { data: accessToken, isFetched } = useQuery(queryAccessToken())
+  const { data: userId, isFetched: isFetchedUserId } = useQuery(queryUserId())
   const { data: plaidData } = useQuery({ ...queryTransactions(accessToken), enabled: !!accessToken })
-  const { data: pastData } = useQuery({ ...queryPastTransactions(accessToken), enabled: !!accessToken });
+  const { data: pastData } = useQuery({ ...queryPastTransactions(userId), enabled: !!userId });
 
   const navigate = useNavigate()
 
@@ -135,7 +136,6 @@ export default function Insights() {
 
       const paymentData = calculateAvalanche([...calculateDebtCreditCardFromRawData(plaidData[2]), ...calculateDebtMortgageFromRawData(plaidData[2]), ...calculateDebtLoanFromRawData(plaidData[2])], monthlyBudget)
 
-      console.log(paymentData)
       const formatted = []
 
       paymentData.forEach((month) => {

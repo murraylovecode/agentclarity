@@ -33,8 +33,6 @@ export async function getUserId() {
 
   const { data: { session } } = await supabase.auth.getSession()
 
-  console.log(session)
-
   if (error) {
     console.log(error)
   }

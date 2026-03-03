@@ -59,8 +59,6 @@ export default function PlaidDashboard() {
         institution_id: metadata.institution.institution_id,
       });
 
-      console.log("Linked account metadata:", metadata);
-
       // Fetch updated data after linking
       await refreshData();
     },
