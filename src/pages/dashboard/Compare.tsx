@@ -15,36 +15,11 @@ import {
   ArrowRight,
 } from "lucide-react";
 import { checkRandomId, generateReport } from "@/lib/supabase/anonymized/shareableReports";
-import { getUserId } from "@/lib/supabase/login/getUserDetails.client";
 import { useQuery } from "@tanstack/react-query";
 import { calculateAlternateAssetFromRawData, calculateBankBalancesFromRawData, calculateCashFromRawData, calculateInvestmentsFromRawData, calculateRealEstateFromRawData } from "@/utils/transactionHelpers";
 import { queryTransactions } from "@/queries/transactions";
-import { queryUserId } from "@/queries/auth";
+import { queryAccessToken, queryUserId } from "@/queries/auth";
 import { useNavigate } from "react-router-dom";
-
-const sharedProfiles = [
-  {
-    id: 1,
-    name: "Investment Club",
-    members: 5,
-    lastActive: "2 hours ago",
-    status: "active",
-  },
-  {
-    id: 2,
-    name: "Founders Group",
-    members: 8,
-    lastActive: "Yesterday",
-    status: "active",
-  },
-];
-
-const comparisonMetrics = [
-  { name: "Equity Allocation", you: 45, group: 52 },
-  { name: "Cash Position", you: 12, group: 8 },
-  { name: "Private Holdings", you: 25, group: 18 },
-  { name: "Real Estate", you: 18, group: 22 },
-];
 
 export default function Compare() {
   const [shareLink, setShareLink] = useState("");
@@ -74,16 +49,17 @@ export default function Compare() {
 
   const [loadData, setLoadData] = useState(false)
 
-  axios.defaults.baseURL = "https://agentclarity.onrender.com";
+  axios.defaults.baseURL = "http://localhost:3000";
 
-  const { data: userId, isFetched } = useQuery(queryUserId())
-  const { data: plaidData } = useQuery({ ...queryTransactions(userId), enabled: !!userId })
+  const { data: accessToken, isFetched } = useQuery(queryAccessToken())
+  const { data: userId } = useQuery(queryUserId())
+  const { data: plaidData } = useQuery({ ...queryTransactions(accessToken), enabled: !!accessToken })
 
   const navigate = useNavigate()
 
 
   useEffect(() => {
-    if (userId && plaidData) {
+    if (accessToken && plaidData) {
       let totalBankBalances = calculateBankBalancesFromRawData(plaidData[0])
       let totalInvestment = calculateInvestmentsFromRawData(plaidData[1])
       let totalCash = calculateCashFromRawData(plaidData[4])
@@ -98,10 +74,10 @@ export default function Compare() {
 
       setLoadData(true)
     }
-    else if (!userId && isFetched) {
+    else if (!accessToken && isFetched) {
       navigate("/NotLoggedIn")
     }
-  }, [userId, plaidData]);
+  }, [accessToken, plaidData]);
 
   const generateShareLink = async () => {
     let randomLink = Math.random().toString(36).substring(7)

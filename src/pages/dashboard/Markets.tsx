@@ -4,7 +4,7 @@ import { TrendingUp, TrendingDown, Info } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { calculateSecuritiesByType, listInvestmentsFromRawData } from "@/utils/transactionHelpers";
 import { queryTransactions } from "@/queries/transactions";
-import { queryUserId } from "@/queries/auth";
+import { queryAccessToken } from "@/queries/auth";
 import axios from "axios";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -34,10 +34,10 @@ export default function Markets() {
   const [investmentByType, setInvestmentByType] = useState<Record<string, number>>({});
   const [loadData, setLoadData] = useState(false);
 
-  axios.defaults.baseURL = "https://agentclarity.onrender.com";
+  axios.defaults.baseURL = "http://localhost:3000";
 
-  const { data: userId, isFetched } = useQuery(queryUserId())
-  const { data: plaidData } = useQuery({ ...queryTransactions(userId), enabled: !!userId })
+  const { data: accessToken, isFetched } = useQuery(queryAccessToken())
+  const { data: plaidData } = useQuery({ ...queryTransactions(accessToken), enabled: !!accessToken })
 
   const navigate = useNavigate()
 
@@ -82,17 +82,17 @@ export default function Markets() {
 
 
   useEffect(() => {
-    if (userId && plaidData) {
+    if (accessToken && plaidData) {
       const list = listInvestmentsFromRawData(plaidData[1]);
       const byType = calculateSecuritiesByType(plaidData[1]);
       setInvestmentList(list);
       setInvestmentByType(byType);
       setLoadData(true);
     }
-    else if (!userId && isFetched) {
+    else if (!accessToken && isFetched) {
       navigate("/NotLoggedIn")
     }
-  }, [userId, plaidData]);
+  }, [accessToken, plaidData]);
 
   // Sort investment types by value descending
   const sortedTypes = INVESTMENT_TYPES

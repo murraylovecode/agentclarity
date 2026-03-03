@@ -4,11 +4,10 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { usePlaidLink } from "react-plaid-link";
 import axios from "axios";
-import { getUserId } from "@/lib/supabase/login/getUserDetails.client";
 import { listBankBalancesFromRawData, listInvestmentsFromRawData } from "@/utils/transactionHelpers";
 import { useQuery } from "@tanstack/react-query";
 import { queryTransactions } from "@/queries/transactions";
-import { queryUserId } from "@/queries/auth";
+import { queryAccessToken } from "@/queries/auth";
 import { useNavigate } from "react-router-dom";
 
 export default function PlaidDashboard() {
@@ -17,7 +16,7 @@ export default function PlaidDashboard() {
   const [bankNames, setBankNames] = useState<string[]>([]);
   const [investmentNames, setInvestmentNames] = useState<string[]>([]);
 
-  axios.defaults.baseURL = "https://agentclarity.onrender.com";
+  axios.defaults.baseURL = "http://localhost:3000";
 
   useEffect(() => {
     const fetchLinkToken = async () => {
@@ -27,23 +26,23 @@ export default function PlaidDashboard() {
     fetchLinkToken();
   }, []);
 
-  const { data: userId, isFetched } = useQuery(queryUserId())
-  const { data: plaidData, refetch } = useQuery({ ...queryTransactions(userId), enabled: !!userId })
+  const { data: accessToken, isFetched } = useQuery(queryAccessToken())
+  const { data: plaidData, refetch } = useQuery({ ...queryTransactions(accessToken), enabled: !!accessToken })
 
   const navigate = useNavigate()
 
   useEffect(() => {
-    if (userId && plaidData) {
+    if (accessToken && plaidData) {
       let listBankBalances = listBankBalancesFromRawData(plaidData[0])
       let listInvestments = listInvestmentsFromRawData(plaidData[1])
 
       setBankNames(listBankBalances);
       setInvestmentNames(listInvestments);
     }
-    else if (!userId && isFetched) {
+    else if (!accessToken && isFetched) {
       navigate("/NotLoggedIn")
     }
-  }, [userId, plaidData]);
+  }, [accessToken, plaidData]);
 
   function refreshData() {
     refetch()
@@ -52,11 +51,11 @@ export default function PlaidDashboard() {
   const { open } = usePlaidLink({
     token: linkToken,
     onSuccess: async (public_token, metadata) => {
-      if (!userId) return console.error("User not ready yet");
+      if (!accessToken) return console.error("User not ready yet");
 
       await axios.post("/exchange_public_token", {
         public_token,
-        user_id: userId,
+        access_token: accessToken,
         institution_id: metadata.institution.institution_id,
       });
 

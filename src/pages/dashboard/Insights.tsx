@@ -12,7 +12,7 @@ import {
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { queryUserId } from "@/queries/auth";
+import { queryAccessToken } from "@/queries/auth";
 import { queryPastTransactions, queryTransactions } from "@/queries/transactions";
 import { calculateAlternateAssetFromRawData, calculateBankBalancesFromRawData, calculateCashFromRawData, calculateDebtCreditCardFromRawData, calculateDebtLoanFromRawData, calculateDebtMortgageFromRawData, calculateInvestmentsFromRawData, calculateRealEstateFromRawData } from "@/utils/transactionHelpers";
 import { useNavigate } from "react-router-dom";
@@ -86,7 +86,7 @@ function calculateAvalanche(debts, monthlyBudget) {
 
 
 export default function Insights() {
-  axios.defaults.baseURL = "https://agentclarity.onrender.com";
+  axios.defaults.baseURL = "http://localhost:3000";
 
   const [bankBalance, setBankBalance] = useState(0);
   const [investmentAmount, setInvestmentAmount] = useState(0);
@@ -104,16 +104,16 @@ export default function Insights() {
 
   const [monthlyBudget, setMonthlyBudget] = useState(12000)
 
-  const { data: userId, isFetched } = useQuery(queryUserId())
-  const { data: plaidData } = useQuery({ ...queryTransactions(userId), enabled: !!userId })
-  const { data: pastData } = useQuery({ ...queryPastTransactions(userId), enabled: !!userId });
+  const { data: accessToken, isFetched } = useQuery(queryAccessToken())
+  const { data: plaidData } = useQuery({ ...queryTransactions(accessToken), enabled: !!accessToken })
+  const { data: pastData } = useQuery({ ...queryPastTransactions(accessToken), enabled: !!accessToken });
 
   const navigate = useNavigate()
 
   const [formattedData, setFormattedData] = useState<any[]>([])
 
   useEffect(() => {
-    if (userId && plaidData && pastData) {
+    if (accessToken && plaidData && pastData) {
 
       setCashPast(pastData[0][0].cash);
       setInvestmentAmountPast(pastData[0][0].investment);
@@ -152,10 +152,10 @@ export default function Insights() {
 
       setLoadData(true);
     }
-    else if (!userId && isFetched) {
+    else if (!accessToken && isFetched) {
       navigate("/NotLoggedIn")
     }
-  }, [userId, plaidData, pastData, monthlyBudget]);
+  }, [accessToken, plaidData, pastData, monthlyBudget]);
 
   const formatCurrency = (value: number) =>
     new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", minimumFractionDigits: 0 }).format(value);

@@ -1,7 +1,7 @@
 import { queryOptions } from "@tanstack/react-query";
 import axios from "axios";
 
-axios.defaults.baseURL = "https://agentclarity.onrender.com";
+axios.defaults.baseURL = "http://localhost:3000";
 
 export function queryAssets(userId: string) {
     return queryOptions({
@@ -10,8 +10,8 @@ export function queryAssets(userId: string) {
     })
 }
 
-async function getAssetsForUser(userId: string) {
-    const data = await axios.post("/getAllAssets", { user_id: userId })
+async function getAssetsForUser(accessToken: string) {
+    const data = await axios.post("/getAllAssets", {}, { headers: { Authorization: accessToken }})
     return data
 
 }

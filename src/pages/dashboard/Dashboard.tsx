@@ -20,7 +20,7 @@ import { ClipLoader } from "react-spinners";
 import { useQuery } from "@tanstack/react-query";
 import { queryTransactions } from "@/queries/transactions";
 import { calculateAlternateAssetFromRawData, calculateBankBalancesFromRawData, calculateCashFromRawData, calculateCreditCardFromRawData, calculateDueLoanFromRawData, calculateDueMortgageFromRawData, calculateInvestmentsFromRawData, calculateLoanFromRawData, calculateMortgageFromRawData, calculateRealEstateFromRawData } from "@/utils/transactionHelpers";
-import { queryUserId } from "@/queries/auth";
+import { queryAccessToken, queryUserId } from "@/queries/auth";
 import { useNavigate } from "react-router-dom";
 
 // Demo data
@@ -47,7 +47,7 @@ function formatCurrency(value: number) {
 
 export default function Dashboard() {
 
-  axios.defaults.baseURL = "https://agentclarity.onrender.com";
+  axios.defaults.baseURL = "http://localhost:3000";
 
   const [dialogOpen, setDialogOpen] = useState(false);
 
@@ -114,14 +114,14 @@ export default function Dashboard() {
     setLongTermDebt(fullMortgageAmount + fullLoanAmount)
   }, [totalAmount, shortTermDebt, longTermDebt])
 
-  const { data: userId, isFetched } = useQuery(queryUserId())
-  const { data: plaidData } = useQuery({ ...queryTransactions(userId), enabled: !!userId })
+  const { data: accessToken, isFetched } = useQuery(queryAccessToken())
+  const { data: plaidData } = useQuery({ ...queryTransactions(accessToken), enabled: !!accessToken })
 
   const navigate = useNavigate()
 
 
   useEffect(() => {
-    if (userId && plaidData) {
+    if (accessToken && plaidData) {
       let totalBankBalances = calculateBankBalancesFromRawData(plaidData[0])
       let totalInvestment = calculateInvestmentsFromRawData(plaidData[1])
 
@@ -151,10 +151,10 @@ export default function Dashboard() {
 
       setLoadData(true)
     }
-    else if (!userId && isFetched) {
+    else if (!accessToken && isFetched) {
       navigate("/NotLoggedIn")
     }
-  }, [userId, plaidData]);
+  }, [accessToken, plaidData]);
 
   return (
     <div className="p-6 lg:p-8 space-y-6 max-w-7xl mx-auto" style={{ paddingTop: "calc(env(safe-area-inset-top) + 4rem)" }}>

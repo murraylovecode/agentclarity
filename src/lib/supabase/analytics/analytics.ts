@@ -1,9 +1,7 @@
 import axios from "axios";
-axios.defaults.baseURL = "https://agentclarity.onrender.com";
+axios.defaults.baseURL = "http://localhost:3000";
 
-export async function getAdminAnalytics(userId: string) {
-    const data = await axios.post("/getAnalytics", { "user_id": userId })
-    console.log("here")
-    console.log(data)
+export async function getAdminAnalytics(accessToken: string) {
+    const data = await axios.post("/getAnalytics", { headers: { Authorization: accessToken }})
     return data;
 }

@@ -14,7 +14,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
-import { queryUserId } from "@/queries/auth";
+import { queryAccessToken, queryUserId } from "@/queries/auth";
 import { queryTransactions } from "@/queries/transactions";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
@@ -36,8 +36,8 @@ export default function DealAnalyzer() {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysis, setAnalysis] = useState(false);
 
-  const { data: userId, isFetched } = useQuery(queryUserId())
-  const { data: plaidData } = useQuery({ ...queryTransactions(userId), enabled: !!userId })
+  const { data: accessToken, isFetched } = useQuery(queryAccessToken())
+  const { data: plaidData } = useQuery({ ...queryTransactions(accessToken), enabled: !!accessToken })
 
   const navigate = useNavigate()
 
@@ -46,10 +46,10 @@ export default function DealAnalyzer() {
 
   const [context, setContext] = useState([])
 
-  axios.defaults.baseURL = "https://agentclarity.onrender.com";
+  axios.defaults.baseURL = "http://localhost:3000";
 
   async function getResponse() {
-    if (userId && plaidData && question != "") {
+    if (accessToken && plaidData && question != "") {
       let totalBankBalances = calculateBankBalancesFromRawData(plaidData[0])
       let totalInvestment = calculateInvestmentsFromRawData(plaidData[1])
 
@@ -89,11 +89,11 @@ export default function DealAnalyzer() {
         setQuestion("")
       }
     }
-    else if (!userId && isFetched) {
+    else if (!accessToken && isFetched) {
       navigate("/NotLoggedIn")
     }
     else {
-      console.log(userId)
+      console.log(accessToken)
       console.log(plaidData)
       console.log(question)
       console.log("wait more")
@@ -195,7 +195,7 @@ export default function DealAnalyzer() {
               size="lg"
               className="w-full"
               onClick={handleAnalyze}
-              disabled={isAnalyzing || !dealType || !amount || !userId || !plaidData}
+              disabled={isAnalyzing || !dealType || !amount || !accessToken || !plaidData}
             >
               {isAnalyzing ? (
                 <span className="flex items-center gap-2">
