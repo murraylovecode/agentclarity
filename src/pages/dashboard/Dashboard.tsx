@@ -21,6 +21,7 @@ import { queryPastTransactions, queryTransactions } from "@/queries/transactions
 import { calculateAlternateAssetFromRawData, calculateBankBalancesFromRawData, calculateCashFromRawData, calculateCreditCardFromRawData, calculateDueLoanFromRawData, calculateDueMortgageFromRawData, calculateInvestmentsFromRawData, calculateLoanFromRawData, calculateMortgageFromRawData, calculateRealEstateFromRawData } from "@/utils/transactionHelpers";
 import { queryAccessToken, queryUserId } from "@/queries/auth";
 import { useNavigate } from "react-router-dom";
+import { CalculateLastMonthTotalBalance } from "@/utils/pastTransactionHelpers";
 
 // Demo data
 
@@ -71,6 +72,9 @@ export default function Dashboard() {
   const [longTermDebt, setLongTermDebt] = useState(0)
 
   const [totalAmount, setTotalAmount] = useState(0)
+  const [lastMonthTotalAmount, setLastMonthTotalAmount] = useState(0)
+  const [monthlyChange, setMonthlyChange] = useState(0)
+  const [monthlyChangePerc, setMonthlyChangePerc] = useState(0)
 
   const [loadData, setLoadData] = useState(false)
 
@@ -78,11 +82,6 @@ export default function Dashboard() {
     { name: string; value: number; color: string }[]
   >([]);
 
-  const netWorth = {
-    total: totalAmount,
-    change: 0,
-    changePercent: 0,
-  };
 
   const liquidityBreakdown = {
     immediate: immediateAmount,
@@ -110,6 +109,8 @@ export default function Dashboard() {
     setLongTermAmount(realEstateAmount + alternateAssets)
     setShortTermDebt(creditCardAmount + mortgageAmount + loanAmount)
     setLongTermDebt(fullMortgageAmount + fullLoanAmount)
+    setMonthlyChange(cash + bankBalance + investmentAmount + realEstateAmount + alternateAssets - lastMonthTotalAmount)
+    setMonthlyChangePerc(Math.round(Math.abs(cash + bankBalance + investmentAmount + realEstateAmount + alternateAssets - lastMonthTotalAmount) * 100 / (lastMonthTotalAmount)))
   }, [totalAmount, shortTermDebt, longTermDebt])
 
   const { data: accessToken, isFetched } = useQuery(queryAccessToken())
@@ -120,7 +121,7 @@ export default function Dashboard() {
 
 
   useEffect(() => {
-    if (accessToken && plaidData) {
+    if (accessToken && plaidData && pastData) {
       let totalBankBalances = calculateBankBalancesFromRawData(plaidData[0])
       let totalInvestment = calculateInvestmentsFromRawData(plaidData[1])
 
@@ -135,6 +136,8 @@ export default function Dashboard() {
       let realEstate = calculateRealEstateFromRawData(plaidData[4])
       let alternateAsset = calculateAlternateAssetFromRawData(plaidData[4])
 
+      let lastMonthBalance = CalculateLastMonthTotalBalance(pastData)
+
       setBankBalance(totalBankBalances)
       setInvestmentAmount(totalInvestment)
       setCash(cash)
@@ -148,12 +151,14 @@ export default function Dashboard() {
       setFullMortgageAmount(fullMortgage)
       setFullLoanAmount(fullLoan)
 
+      setLastMonthTotalAmount(lastMonthBalance)
+
       setLoadData(true)
     }
     else if (!accessToken && isFetched) {
       navigate("/NotLoggedIn")
     }
-  }, [accessToken, plaidData]);
+  }, [accessToken, plaidData, pastData]);
 
   return (
     <div className="p-6 lg:p-8 space-y-6 max-w-7xl mx-auto" style={{ paddingTop: "calc(env(safe-area-inset-top) + 4rem)" }}>
@@ -189,21 +194,21 @@ export default function Dashboard() {
           </CardDescription>
           <div className="flex items-end gap-4 mt-2">
             <CardTitle className="text-4xl font-bold tracking-tight">
-              {formatCurrency(netWorth.total)}
+              {formatCurrency(totalAmount)}
             </CardTitle>
             <div
-              className={`flex items-center gap-1 px-2 py-1 rounded-full text-sm font-medium ${netWorth.change > 0
+              className={`flex items-center gap-1 px-2 py-1 rounded-full text-sm font-medium ${monthlyChange > 0
                 ? "bg-success/10 text-success"
                 : "bg-destructive/10 text-destructive"
                 }`}
             >
-              {netWorth.change > 0 ? (
+              {monthlyChange > 0 ? (
                 <TrendingUp className="w-3 h-3" />
               ) : (
                 <TrendingDown className="w-3 h-3" />
               )}
-              {netWorth.change > 0 ? "+" : ""}
-              {formatCurrency(netWorth.change)} ({netWorth.changePercent}%)
+              {monthlyChange > 0 ? "+" : ""}
+              {formatCurrency(monthlyChange)} ({monthlyChangePerc}%)
             </div>
           </div>
         </CardHeader>

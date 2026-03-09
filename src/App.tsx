@@ -11,8 +11,6 @@ import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import Index from "./pages/Index";
 import Login from "./pages/auth/Login";
 import Register from "./pages/auth/Register";
-import AdminLogin from "./pages/AdminLogin";
-import Admin from "./pages/Admin";
 import Dashboard from "./pages/dashboard/Dashboard";
 import Assets from "./pages/dashboard/Assets";
 import Markets from "./pages/dashboard/Markets";
@@ -39,8 +37,6 @@ const App = () => (
           <Route path="/" element={<Index />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
-          <Route path="/admin/login" element={<AdminLogin />} />
-          <Route path="/admin" element={<Admin />} />
           <Route path="/share/:shareId" element={<SharePage/>} />
           <Route path="/notloggedin" element={<NotLoggedIn />} />
           <Route path="/analytics" element={<Analytics/>} />

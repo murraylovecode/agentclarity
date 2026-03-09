@@ -1,4 +1,3 @@
-import { getPastData } from "@/lib/supabase/past/getPastData";
 import { queryOptions } from "@tanstack/react-query";
 import axios from "axios";
 
@@ -26,8 +25,8 @@ export function queryPastTransactions(accessToken: string) {
     })
 }
 
-async function extractPastData(userId: string) {
-    const pastData = await getPastData(userId)
+async function extractPastData(accessToken: string) {
+    const pastData = await axios.post("/getPastData", {}, { headers: { Authorization: `Bearer: ${accessToken}` }});
 
     return [pastData]
 }
