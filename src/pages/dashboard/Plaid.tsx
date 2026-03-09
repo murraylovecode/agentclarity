@@ -14,7 +14,10 @@ export default function PlaidDashboard() {
   const [linkToken, setLinkToken] = useState("");
 
   const [bankNames, setBankNames] = useState<string[]>([]);
+  const dummyBanks = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
   const [investmentNames, setInvestmentNames] = useState<string[]>([]);
+
+  const [loadData, setLoadData] = useState(false)
 
   axios.defaults.baseURL = "http://localhost:3000";
 
@@ -38,6 +41,7 @@ export default function PlaidDashboard() {
 
       setBankNames(listBankBalances);
       setInvestmentNames(listInvestments);
+      setLoadData(true);
     }
     else if (!accessToken && isFetched) {
       navigate("/NotLoggedIn")
@@ -45,7 +49,9 @@ export default function PlaidDashboard() {
   }, [accessToken, plaidData]);
 
   function refreshData() {
+    setLoadData(false);
     refetch()
+    setLoadData(true);
   }
 
   const { open } = usePlaidLink({
@@ -87,13 +93,37 @@ export default function PlaidDashboard() {
           <div className="px-4 py-3 border-b bg-muted/50 rounded-t-xl">
             <h2 className="font-semibold text-lg">Linked Accounts</h2>
           </div>
-
-          <div className="p-4">
-            {bankNames.length === 0 ? (
-              <p className="text-sm text-muted-foreground">
-                No bank accounts linked
-              </p>
-            ) : (
+          {loadData ? (
+            <div className="p-4">
+              {bankNames.length === 0 ? (
+                <p className="text-sm text-muted-foreground">
+                  No bank accounts linked
+                </p>
+              ) : (
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="text-left text-muted-foreground">
+                      <th className="pb-2">Account</th>
+                      <th className="pb-2">Bank</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {bankNames.map((name, idx) => (
+                      <tr key={idx} className="border-t">
+                        <td className="py-2 font-medium">
+                          {name[0]}
+                        </td>
+                        <td className="py-2 italic text-muted-foreground">
+                          {name[1]}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </div>
+          ) : (
+            <div className="p-4">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="text-left text-muted-foreground">
@@ -102,20 +132,20 @@ export default function PlaidDashboard() {
                   </tr>
                 </thead>
                 <tbody>
-                  {bankNames.map((name, idx) => (
+                  {dummyBanks.map((name, idx) => (
                     <tr key={idx} className="border-t">
-                      <td className="py-2 font-medium">
-                        {name[0]}
+                      <td className="py-2 pr-5 font-medium animate-pulse">
+                        <div className="bg-muted text-transparent">Filler Text</div>
                       </td>
-                      <td className="py-2 italic text-muted-foreground">
-                        {name[1]}
+                      <td className="py-2 italic text-muted-foreground animate-pulse">
+                        <div className="bg-muted text-transparent">Filler Text</div>
                       </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
-            )}
-          </div>
+            </div>
+          )}
         </div>
 
         {/* Investments */}
@@ -124,34 +154,60 @@ export default function PlaidDashboard() {
             <h2 className="font-semibold text-lg">Linked Investments</h2>
           </div>
 
-          <div className="p-4">
-            {investmentNames.length === 0 ? (
-              <p className="text-sm text-muted-foreground">
-                No investments linked
-              </p>
-            ) : (
+          {loadData ? (
+            <div className="p-4">
+              {investmentNames.length === 0 ? (
+                <p className="text-sm text-muted-foreground">
+                  No investments linked
+                </p>
+              ) : (
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="text-left text-muted-foreground">
+                      <th className="pb-2">Investment</th>
+                      <th className="pb-2">Institution</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {investmentNames.map((name, idx) => (
+                      <tr key={idx} className="border-t">
+                        <td className="py-2 font-medium">
+                          {name[0]}
+                        </td>
+                        <td className="py-2 italic text-muted-foreground">
+                          {name[1]}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </div>
+          ) : (
+            <div className="p-4">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="text-left text-muted-foreground">
-                    <th className="pb-2">Investment</th>
-                    <th className="pb-2">Institution</th>
+                    <th className="pb-2">Account</th>
+                    <th className="pb-2">Bank</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {investmentNames.map((name, idx) => (
+                  {dummyBanks.map((name, idx) => (
                     <tr key={idx} className="border-t">
-                      <td className="py-2 font-medium">
-                        {name[0]}
+                      <td className="py-2 pr-5 font-medium animate-pulse">
+                        <div className="bg-muted text-transparent">Filler Text</div>
                       </td>
-                      <td className="py-2 italic text-muted-foreground">
-                        {name[1]}
+                      <td className="py-2 italic text-muted-foreground animate-pulse">
+                        <div className="bg-muted text-transparent">Filler Text</div>
                       </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
-            )}
-          </div>
+            </div>
+          )}
+
         </div>
 
       </div>

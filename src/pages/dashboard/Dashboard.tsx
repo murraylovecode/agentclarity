@@ -14,11 +14,10 @@ import {
   Plus,
 } from "lucide-react";
 import { AssetDialog } from "@/components/assets/AssetDialog";
-import { getUserId } from "@/lib/supabase/login/getUserDetails.client";
 
 import { ClipLoader } from "react-spinners";
 import { useQuery } from "@tanstack/react-query";
-import { queryTransactions } from "@/queries/transactions";
+import { queryPastTransactions, queryTransactions } from "@/queries/transactions";
 import { calculateAlternateAssetFromRawData, calculateBankBalancesFromRawData, calculateCashFromRawData, calculateCreditCardFromRawData, calculateDueLoanFromRawData, calculateDueMortgageFromRawData, calculateInvestmentsFromRawData, calculateLoanFromRawData, calculateMortgageFromRawData, calculateRealEstateFromRawData } from "@/utils/transactionHelpers";
 import { queryAccessToken, queryUserId } from "@/queries/auth";
 import { useNavigate } from "react-router-dom";
@@ -81,9 +80,8 @@ export default function Dashboard() {
 
   const netWorth = {
     total: totalAmount,
-    change: 125000,
-    changePercent: 2.7,
-    trend: "up" as const,
+    change: 0,
+    changePercent: 0,
   };
 
   const liquidityBreakdown = {
@@ -116,6 +114,7 @@ export default function Dashboard() {
 
   const { data: accessToken, isFetched } = useQuery(queryAccessToken())
   const { data: plaidData } = useQuery({ ...queryTransactions(accessToken), enabled: !!accessToken })
+  const { data: pastData } = useQuery({ ...queryPastTransactions(accessToken), enabled: !!accessToken })
 
   const navigate = useNavigate()
 
@@ -190,22 +189,20 @@ export default function Dashboard() {
           </CardDescription>
           <div className="flex items-end gap-4 mt-2">
             <CardTitle className="text-4xl font-bold tracking-tight">
-              {loadData ? (
-                formatCurrency(netWorth.total)
-              ) : (<><ClipLoader loading aria-label="Loading Spinner" data-testid="loader" /> Loading</>)}
+              {formatCurrency(netWorth.total)}
             </CardTitle>
             <div
-              className={`flex items-center gap-1 px-2 py-1 rounded-full text-sm font-medium ${netWorth.trend === "up"
+              className={`flex items-center gap-1 px-2 py-1 rounded-full text-sm font-medium ${netWorth.change > 0
                 ? "bg-success/10 text-success"
                 : "bg-destructive/10 text-destructive"
                 }`}
             >
-              {netWorth.trend === "up" ? (
+              {netWorth.change > 0 ? (
                 <TrendingUp className="w-3 h-3" />
               ) : (
                 <TrendingDown className="w-3 h-3" />
               )}
-              {netWorth.trend === "up" ? "+" : ""}
+              {netWorth.change > 0 ? "+" : ""}
               {formatCurrency(netWorth.change)} ({netWorth.changePercent}%)
             </div>
           </div>
@@ -235,22 +232,30 @@ export default function Dashboard() {
             </Button>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              {allocation.map((item) => (
-                <div key={item.name} className="space-y-2">
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="font-medium text-foreground">{item.name}</span>
-                    <span className="text-muted-foreground">{item.value}%</span>
+            {loadData ?
+              <div className="space-y-6">
+                {allocation.map((item) => (
+                  <div key={item.name} className="space-y-2">
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="font-medium text-foreground">{item.name}</span>
+                      <span className="text-muted-foreground">{item.value}%</span>
+                    </div>
+                    <div className="h-2 bg-muted rounded-full overflow-hidden">
+                      <div
+                        className={`h-full ${item.color} rounded-full transition-all duration-500`}
+                        style={{ width: `${item.value}%` }}
+                      />
+                    </div>
                   </div>
-                  <div className="h-2 bg-muted rounded-full overflow-hidden">
-                    <div
-                      className={`h-full ${item.color} rounded-full transition-all duration-500`}
-                      style={{ width: `${item.value}%` }}
-                    />
+                ))}
+              </div>
+              : <div className="animate-pulse space-y-6">
+                {allocation.map((item) => (
+                  <div key={item.name} className="h-9 bg-muted rounded-lg">
                   </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            }
           </CardContent>
         </Card>
 
@@ -263,32 +268,46 @@ export default function Dashboard() {
             </CardTitle>
             <CardDescription>Access to your capital</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="p-4 rounded-lg bg-success/5 border border-success/20">
-              <p className="text-xs font-medium text-success uppercase tracking-wide">
-                Immediate (0-7 days)
-              </p>
-              <p className="text-2xl font-semibold text-foreground mt-1">
-                {formatCurrency(liquidityBreakdown.immediate)}
-              </p>
-            </div>
-            <div className="p-4 rounded-lg bg-warning/5 border border-warning/20">
-              <p className="text-xs font-medium text-warning uppercase tracking-wide">
-                Short-term (7-90 days)
-              </p>
-              <p className="text-2xl font-semibold text-foreground mt-1">
-                {formatCurrency(liquidityBreakdown.shortTerm)}
-              </p>
-            </div>
-            <div className="p-4 rounded-lg bg-muted border border-border">
-              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-                Long-term (90+ days)
-              </p>
-              <p className="text-2xl font-semibold text-foreground mt-1">
-                {formatCurrency(liquidityBreakdown.longTerm)}
-              </p>
-            </div>
-          </CardContent>
+          {loadData ? (
+            <CardContent className="space-y-4">
+              <div className="p-4 rounded-lg bg-success/5 border border-success/20">
+                <p className="text-xs font-medium text-success uppercase tracking-wide">
+                  Immediate (0-7 days)
+                </p>
+                <p className="text-2xl font-semibold text-foreground mt-1">
+                  {formatCurrency(liquidityBreakdown.immediate)}
+                </p>
+              </div>
+              <div className="p-4 rounded-lg bg-warning/5 border border-warning/20">
+                <p className="text-xs font-medium text-warning uppercase tracking-wide">
+                  Short-term (7-90 days)
+                </p>
+                <p className="text-2xl font-semibold text-foreground mt-1">
+                  {formatCurrency(liquidityBreakdown.shortTerm)}
+                </p>
+              </div>
+              <div className="p-4 rounded-lg bg-muted border border-border">
+                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                  Long-term (90+ days)
+                </p>
+                <p className="text-2xl font-semibold text-foreground mt-1">
+                  {formatCurrency(liquidityBreakdown.longTerm)}
+                </p>
+              </div>
+            </CardContent>
+          ) : (
+            <CardContent className="animate-pulse space-y-4">
+              <div className="h-[86px] rounded-lg bg-muted">
+                <div></div>
+              </div>
+              <div className="h-[86px] rounded-lg bg-muted">
+                <div></div>
+              </div>
+              <div className="h-[86px] rounded-lg bg-muted">
+                <div></div>
+              </div>
+            </CardContent>
+          )}
         </Card>
       </div>
 
@@ -303,23 +322,32 @@ export default function Dashboard() {
             </CardTitle>
             <CardDescription>Assets & liabilities due in the next 90 days</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
-            {/* Assets */}
-            <div className="flex justify-between text-sm">
-              <span className="font-medium text-foreground">Assets</span>
-              <span>{formatCurrency(immediateAmount + shortTermAmount)}</span>
-            </div>
-            {/* Liabilities */}
-            <div className="flex justify-between text-sm">
-              <span className="font-medium text-foreground">Liabilities</span>
-              <span>{formatCurrency(shortTermDebt)}</span>
-            </div>
-            {/* Net Short-term */}
-            <div className="flex justify-between font-semibold text-foreground border-t pt-2 mt-2">
-              <span>Net Short-Term</span>
-              <span>{formatCurrency(shortTermAmount - shortTermDebt)}</span>
-            </div>
-          </CardContent>
+          {loadData ? (
+            <CardContent className="space-y-4">
+              {/* Assets */}
+              <div className="flex justify-between text-sm">
+                <span className="font-medium text-foreground">Assets</span>
+                <span>{formatCurrency(immediateAmount + shortTermAmount)}</span>
+              </div>
+              {/* Liabilities */}
+              <div className="flex justify-between text-sm">
+                <span className="font-medium text-foreground">Liabilities</span>
+                <span>{formatCurrency(shortTermDebt)}</span>
+              </div>
+              {/* Net Short-term */}
+              <div className="flex justify-between font-semibold text-foreground border-t pt-2 mt-2">
+                <span>Net Short-Term</span>
+                <span>{formatCurrency(shortTermAmount - shortTermDebt)}</span>
+              </div>
+            </CardContent>
+          ) : (
+            <CardContent className="animate-pulse space-y-4">
+              <div className="h-5 rounded-lg bg-muted"></div>
+              <div className="h-5 rounded-lg bg-muted"></div>
+              <div className="border-t"></div>
+              <div className="h-6 !mt-2 rounded-lg bg-muted"></div>
+            </CardContent>
+          )}
         </Card>
 
         {/* Long-term Finance */}
@@ -331,117 +359,34 @@ export default function Dashboard() {
             </CardTitle>
             <CardDescription>Assets & liabilities due in 90+ days</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
-            {/* Assets */}
-            <div className="flex justify-between text-sm">
-              <span className="font-medium text-foreground">Assets</span>
-              <span>{formatCurrency(longTermAmount)}</span>
-            </div>
-            {/* Liabilities */}
-            <div className="flex justify-between text-sm">
-              <span className="font-medium text-foreground">Liabilities</span>
-              <span>{formatCurrency(longTermDebt)}</span>
-            </div>
-            {/* Net Long-term */}
-            <div className="flex justify-between font-semibold text-foreground border-t pt-2 mt-2">
-              <span>Net Long-Term</span>
-              <span>{formatCurrency(longTermAmount - longTermDebt)}</span>
-            </div>
-          </CardContent>
+          {loadData ? (
+            <CardContent className="space-y-4">
+              {/* Assets */}
+              <div className="flex justify-between text-sm">
+                <span className="font-medium text-foreground">Assets</span>
+                <span>{formatCurrency(longTermAmount)}</span>
+              </div>
+              {/* Liabilities */}
+              <div className="flex justify-between text-sm">
+                <span className="font-medium text-foreground">Liabilities</span>
+                <span>{formatCurrency(longTermDebt)}</span>
+              </div>
+              {/* Net Long-term */}
+              <div className="flex justify-between font-semibold text-foreground border-t pt-2 mt-2">
+                <span>Net Long-Term</span>
+                <span>{formatCurrency(longTermAmount - longTermDebt)}</span>
+              </div>
+            </CardContent>
+          ) : (
+            <CardContent className="animate-pulse space-y-4">
+              <div className="h-5 rounded-lg bg-muted"></div>
+              <div className="h-5 rounded-lg bg-muted"></div>
+              <div className="border-t"></div>
+              <div className="h-6 !mt-2 rounded-lg bg-muted"></div>
+            </CardContent>
+          )}
         </Card>
       </div>
-
-
-      Bottom Row
-      <div className="grid lg:grid-cols-2 gap-6">
-        {/* Concentration Risks */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <AlertTriangle className="w-5 h-5 text-warning" />
-              Concentration Risks
-            </CardTitle>
-            <CardDescription>Areas requiring attention</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {concentrationRisks.map((risk) => (
-                <div
-                  key={risk.name}
-                  className="flex items-center justify-between p-3 rounded-lg bg-muted/50"
-                >
-                  <div>
-                    <p className="font-medium text-foreground">{risk.name}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {risk.exposure}% exposure (threshold: {risk.threshold}%)
-                    </p>
-                  </div>
-                  <div
-                    className={`px-2 py-1 rounded-full text-xs font-medium ${risk.severity === "high"
-                      ? "bg-destructive/10 text-destructive"
-                      : risk.severity === "medium"
-                        ? "bg-warning/10 text-warning"
-                        : "bg-muted text-muted-foreground"
-                      }`}
-                  >
-                    {risk.severity}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Recent Changes */}
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between">
-            <div>
-              <CardTitle>Recent Changes</CardTitle>
-              <CardDescription>Portfolio movements</CardDescription>
-            </div>
-            <Button variant="ghost" size="sm">
-              View all
-              <ArrowRight className="w-4 h-4 ml-1" />
-            </Button>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {recentChanges.map((change, index) => (
-                <div
-                  key={index}
-                  className="flex items-center justify-between p-3 rounded-lg bg-muted/50"
-                >
-                  <div className="flex items-center gap-3">
-                    <div
-                      className={`w-8 h-8 rounded-full flex items-center justify-center ${change.type === "gain"
-                        ? "bg-success/10"
-                        : "bg-destructive/10"
-                        }`}
-                    >
-                      {change.type === "gain" ? (
-                        <ArrowUpRight className="w-4 h-4 text-success" />
-                      ) : (
-                        <TrendingDown className="w-4 h-4 text-destructive" />
-                      )}
-                    </div>
-                    <div>
-                      <p className="font-medium text-foreground">{change.asset}</p>
-                      <p className="text-xs text-muted-foreground">{change.date}</p>
-                    </div>
-                  </div>
-                  <span
-                    className={`font-medium ${change.type === "gain" ? "text-success" : "text-destructive"
-                      }`}
-                  >
-                    {change.type === "gain" ? "+" : ""}
-                    {formatCurrency(change.change)}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    </div>
+    </div >
   );
 }

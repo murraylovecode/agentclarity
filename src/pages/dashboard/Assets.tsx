@@ -107,6 +107,8 @@ export default function Assets() {
     return matchesType && matchesSearch;
   });
 
+  const dummyData = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+
   const totalValue = filteredAssets.reduce((sum, asset) => sum + asset.value, 0);
 
   const handleAddAsset = () => {
@@ -198,8 +200,32 @@ export default function Assets() {
       <Card>
         <CardContent className="p-0">
           {loading ? (
-            <div className="flex items-center justify-center py-12">
-              <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-border">
+                    <th className="text-left p-4 text-sm font-medium text-muted-foreground">Asset</th>
+                    <th className="text-left p-4 text-sm font-medium text-muted-foreground">Type</th>
+                    <th className="text-right p-4 text-sm font-medium text-muted-foreground">Value</th>
+                    <th className="p-4 text-sm font-medium text-muted-foreground w-12"></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {dummyData.map((asset, idx) => (
+                    <tr key={asset[idx]} className="border-b border-border last:border-0 hover:bg-muted/30 transition-colors">
+                      <td className="h-10 animate-pulse px-4">
+                        <div className="bg-muted text-transparent">Filler Text</div>
+                      </td>
+                      <td className="h-10 animate-pulse px-5">
+                        <div className="bg-muted text-transparent">Filler Text</div>
+                      </td>
+                      <td className="h-10 animate-pulse px-5">
+                        <div className="bg-muted text-transparent">Filler Text</div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           ) : filteredAssets.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 text-center">

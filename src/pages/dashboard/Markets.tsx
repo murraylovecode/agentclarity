@@ -45,7 +45,6 @@ export default function Markets() {
 
   // Memoize sorted list
   const sortedInvestmentList = useMemo(() => {
-    console.log("hi2")
     if (!sortConfig) return investmentList;
 
     const sorted = [...investmentList].sort((a, b) => {
@@ -133,7 +132,8 @@ export default function Markets() {
           <CardTitle>Allocation by Type</CardTitle>
           <CardDescription>Your investments by type</CardDescription>
         </CardHeader>
-        <CardContent>
+        { loadData ? (
+          <CardContent>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 h-[600px] md:h-[400px]">
             {sortedTypes.map((t, idx) => {
               const weight = totalValue ? ((t.value / totalValue) * 100).toFixed(1) : 0;
@@ -166,6 +166,15 @@ export default function Markets() {
             })}
           </div>
         </CardContent>
+        ) : (
+          <CardContent>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 h-[600px] md:h-[400px] animate-pulse">
+            {sortedTypes.map((t, idx) => (
+              <div key={t.type} className={`rounded-2xl shadow-md bg-muted col-span-${idx === 0 ? 2 : 1} row-span-${idx === 0 ? 2 : 1}`}></div>
+            ))}
+          </div>
+        </CardContent>
+        )}
       </Card>
 
 
