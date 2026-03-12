@@ -15,26 +15,12 @@ import {
 } from "lucide-react";
 import { AssetDialog } from "@/components/assets/AssetDialog";
 
-import { ClipLoader } from "react-spinners";
 import { useQuery } from "@tanstack/react-query";
 import { queryPastTransactions, queryTransactions } from "@/queries/transactions";
 import { calculateAlternateAssetFromRawData, calculateBankBalancesFromRawData, calculateCashFromRawData, calculateCreditCardFromRawData, calculateDueLoanFromRawData, calculateDueMortgageFromRawData, calculateInvestmentsFromRawData, calculateLoanFromRawData, calculateMortgageFromRawData, calculateRealEstateFromRawData } from "@/utils/transactionHelpers";
 import { queryAccessToken, queryUserId } from "@/queries/auth";
 import { useNavigate } from "react-router-dom";
 import { CalculateLastMonthTotalBalance } from "@/utils/pastTransactionHelpers";
-
-// Demo data
-
-const concentrationRisks = [
-  { name: "Tech Sector", exposure: 42, threshold: 30, severity: "high" },
-  { name: "Single Stock (NVDA)", exposure: 18, threshold: 10, severity: "medium" },
-  { name: "USD Currency", exposure: 85, threshold: 70, severity: "low" },
-];
-const recentChanges = [
-  { type: "gain", asset: "NVDA", change: 15200, date: "Today" },
-  { type: "loss", asset: "Real Estate Fund", change: -8500, date: "Yesterday" },
-  { type: "gain", asset: "BTC", change: 5400, date: "2 days ago" },
-];
 
 function formatCurrency(value: number) {
   return new Intl.NumberFormat("en-US", {
@@ -136,7 +122,15 @@ export default function Dashboard() {
       let realEstate = calculateRealEstateFromRawData(plaidData[4])
       let alternateAsset = calculateAlternateAssetFromRawData(plaidData[4])
 
-      let lastMonthBalance = CalculateLastMonthTotalBalance(pastData)
+      const dateToday = new Date();
+      const monthNow = dateToday.getFullYear().toString() + "-" + (dateToday.getMonth() + 1).toString().padStart(2, "0")
+
+      if (monthNow in pastData[0]["data"]["data"]) {
+        let lastMonthBalance = CalculateLastMonthTotalBalance(pastData, monthNow)
+        setLastMonthTotalAmount(lastMonthBalance)
+        console.log(lastMonthBalance)
+      }
+
 
       setBankBalance(totalBankBalances)
       setInvestmentAmount(totalInvestment)
@@ -150,8 +144,6 @@ export default function Dashboard() {
 
       setFullMortgageAmount(fullMortgage)
       setFullLoanAmount(fullLoan)
-
-      setLastMonthTotalAmount(lastMonthBalance)
 
       setLoadData(true)
     }

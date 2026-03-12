@@ -16,15 +16,15 @@ import { useEffect, useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { queryAccessToken, queryUserId } from "@/queries/auth";
 import { queryPastTransactions, queryTransactions } from "@/queries/transactions";
-import { 
-  calculateAlternateAssetFromRawData, 
-  calculateBankBalancesFromRawData, 
-  calculateCashFromRawData, 
-  calculateDebtCreditCardFromRawData, 
-  calculateDebtLoanFromRawData, 
-  calculateDebtMortgageFromRawData, 
-  calculateInvestmentsFromRawData, 
-  calculateRealEstateFromRawData 
+import {
+  calculateAlternateAssetFromRawData,
+  calculateBankBalancesFromRawData,
+  calculateCashFromRawData,
+  calculateDebtCreditCardFromRawData,
+  calculateDebtLoanFromRawData,
+  calculateDebtMortgageFromRawData,
+  calculateInvestmentsFromRawData,
+  calculateRealEstateFromRawData
 } from "@/utils/transactionHelpers";
 import { useNavigate } from "react-router-dom";
 import { LineChart, Legend, Line, Tooltip, XAxis, YAxis, ResponsiveContainer, CartesianGrid } from "recharts";
@@ -119,7 +119,7 @@ export default function Insights() {
   const [loadData, setLoadData] = useState(false);
   const [monthlyBudget, setMonthlyBudget] = useState(12000);
   const [formattedDebtData, setFormattedDebtData] = useState<any[]>([]);
-  
+
   // Visibility Toggles for Interactive Chart
   const [visibleCategories, setVisibleCategories] = useState<Record<string, boolean>>({
     Cash: true,
@@ -135,29 +135,31 @@ export default function Insights() {
 
   useEffect(() => {
     if (accessToken && plaidData && pastData) {
-      // Set Past Data
-      const past = pastData[0]["data"]["data"][0];
-      setCashPast(past.cash || 0);
-      setInvestmentAmountPast(past.investment || 0);
-      setBankBalancePast(past.bank_balance || 0);
-      setRealEstateAmountPast(past.real_estate || 0);
-      setAlternateAssetsPast(past.alternate_asset || 0);
+      const dateToday = new Date();
+      const monthNow = dateToday.getFullYear().toString() + "-" + (dateToday.getMonth() + 1).toString().padStart(2, "0")
 
-      // Set Current Data
+      if (monthNow in pastData[0]["data"]["data"]) {
+        const past = pastData[0]["data"]["data"][monthNow]
+        setCashPast(past.cash || 0);
+        setInvestmentAmountPast(past.investment || 0);
+        setBankBalancePast(past.bank_balance || 0);
+        setRealEstateAmountPast(past.real_estate || 0);
+        setAlternateAssetsPast(past.alternate_asset || 0);
+      }
+
       setBankBalance(calculateBankBalancesFromRawData(plaidData[0]));
       setInvestmentAmount(calculateInvestmentsFromRawData(plaidData[1]));
       setCash(calculateCashFromRawData(plaidData[4]));
       setRealEstateAmount(calculateRealEstateFromRawData(plaidData[4]));
       setAlternateAssets(calculateAlternateAssetFromRawData(plaidData[4]));
 
-      // Debt Avalanche Logic
       const debts = [
         ...calculateDebtCreditCardFromRawData(plaidData[2]),
         ...calculateDebtMortgageFromRawData(plaidData[2]),
         ...calculateDebtLoanFromRawData(plaidData[2])
       ];
       const paymentData = calculateAvalanche(debts, monthlyBudget);
-      
+
       const formatted = paymentData.map(month => {
         const row: Record<string, any> = { month: month.month };
         month.balances.forEach(d => { row[d.name] = d.balance; });
@@ -204,8 +206,8 @@ export default function Insights() {
     setVisibleCategories(prev => ({ ...prev, [key]: !prev[key] }));
   };
 
-  const debtKeys = formattedDebtData.length > 0 
-    ? Object.keys(formattedDebtData[0]).filter(k => k !== "month") 
+  const debtKeys = formattedDebtData.length > 0
+    ? Object.keys(formattedDebtData[0]).filter(k => k !== "month")
     : [];
 
   return (
@@ -248,9 +250,9 @@ export default function Insights() {
                   onClick={() => toggleCategory(cat)}
                   className="rounded-full transition-all"
                 >
-                  <span 
-                    className="w-2 h-2 rounded-full mr-2" 
-                    style={{ backgroundColor: visibleCategories[cat] ? 'white' : ASSET_COLORS[cat] }} 
+                  <span
+                    className="w-2 h-2 rounded-full mr-2"
+                    style={{ backgroundColor: visibleCategories[cat] ? 'white' : ASSET_COLORS[cat] }}
                   />
                   {cat}
                 </Button>
@@ -261,28 +263,28 @@ export default function Insights() {
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={assetComparisonData}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                  <XAxis 
-                    dataKey="name" 
-                    axisLine={false} 
-                    tickLine={false} 
-                    padding={{ left: 40, right: 40 }} 
+                  <XAxis
+                    dataKey="name"
+                    axisLine={false}
+                    tickLine={false}
+                    padding={{ left: 40, right: 40 }}
                   />
-                  <YAxis 
-                    axisLine={false} 
-                    tickLine={false} 
-                    tickFormatter={(v) => `$${v / 1000}k`} 
+                  <YAxis
+                    axisLine={false}
+                    tickLine={false}
+                    tickFormatter={(v) => `$${v / 1000}k`}
                   />
-                  <Tooltip 
+                  <Tooltip
                     contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)' }}
-                    formatter={(v) => formatCurrency(Number(v))} 
+                    formatter={(v) => formatCurrency(Number(v))}
                   />
-                  
+
                   {/* Total Line - The prominent one */}
-                  <Line 
-                    type="monotone" 
-                    dataKey="Total" 
-                    stroke={ASSET_COLORS.Total} 
-                    strokeWidth={4} 
+                  <Line
+                    type="monotone"
+                    dataKey="Total"
+                    stroke={ASSET_COLORS.Total}
+                    strokeWidth={4}
                     dot={{ r: 6, fill: ASSET_COLORS.Total }}
                     animationDuration={1000}
                   />
@@ -318,9 +320,9 @@ export default function Insights() {
             <div className="flex items-center gap-4 my-6 bg-slate-50 p-4 rounded-lg w-fit">
               <label className="text-sm font-medium text-slate-600">Adjust Monthly Budget:</label>
               <div className="flex items-center gap-2">
-                <Button 
-                  variant="outline" 
-                  size="icon" 
+                <Button
+                  variant="outline"
+                  size="icon"
                   className="h-8 w-8"
                   onClick={() => setMonthlyBudget(prev => Math.max(prev - 500, 0))}
                 >-</Button>
@@ -330,9 +332,9 @@ export default function Insights() {
                   onChange={(e) => setMonthlyBudget(Number(e.target.value))}
                   className="w-24 text-center bg-transparent border-none font-bold focus:ring-0"
                 />
-                <Button 
-                  variant="outline" 
-                  size="icon" 
+                <Button
+                  variant="outline"
+                  size="icon"
                   className="h-8 w-8"
                   onClick={() => setMonthlyBudget(prev => prev + 500)}
                 >+</Button>
@@ -344,7 +346,7 @@ export default function Insights() {
                 <LineChart data={formattedDebtData}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
                   <XAxis dataKey="month" label={{ value: 'Months from now', position: 'insideBottom', offset: -5 }} />
-                  <YAxis tickFormatter={(v) => `$${v/1000}k`} />
+                  <YAxis tickFormatter={(v) => `$${v / 1000}k`} />
                   <Tooltip formatter={(v) => formatCurrency(Number(v))} />
                   <Legend />
                   {debtKeys.map((key, index) => (
