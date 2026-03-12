@@ -33,7 +33,7 @@ function formatCurrency(value: number) {
 
 export default function Dashboard() {
 
-  axios.defaults.baseURL = "http://localhost:3000";
+  axios.defaults.baseURL = import.meta.env.VITE_BACKEND_URL;
 
   const [dialogOpen, setDialogOpen] = useState(false);
 

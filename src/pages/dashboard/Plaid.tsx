@@ -19,7 +19,7 @@ export default function PlaidDashboard() {
 
   const [loadData, setLoadData] = useState(false)
 
-  axios.defaults.baseURL = "http://localhost:3000";
+  axios.defaults.baseURL = import.meta.env.VITE_BACKEND_URL;
 
   useEffect(() => {
     const fetchLinkToken = async () => {

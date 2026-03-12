@@ -98,7 +98,7 @@ const ASSET_COLORS: Record<string, string> = {
 // --- Main Component ---
 
 export default function Insights() {
-  axios.defaults.baseURL = "http://localhost:3000";
+  axios.defaults.baseURL = import.meta.env.VITE_BACKEND_URL;
   const navigate = useNavigate();
 
   // Current State

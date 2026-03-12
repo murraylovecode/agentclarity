@@ -34,7 +34,7 @@ export default function Markets() {
   const [investmentByType, setInvestmentByType] = useState<Record<string, number>>({});
   const [loadData, setLoadData] = useState(false);
 
-  axios.defaults.baseURL = "http://localhost:3000";
+  axios.defaults.baseURL = import.meta.env.VITE_BACKEND_URL;
 
   const { data: accessToken, isFetched } = useQuery(queryAccessToken())
   const { data: plaidData } = useQuery({ ...queryTransactions(accessToken), enabled: !!accessToken })

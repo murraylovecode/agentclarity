@@ -46,7 +46,7 @@ export default function DealAnalyzer() {
 
   const [context, setContext] = useState([])
 
-  axios.defaults.baseURL = "http://localhost:3000";
+  axios.defaults.baseURL = import.meta.env.VITE_BACKEND_URL;
 
   async function getResponse() {
     if (accessToken && plaidData && question != "") {

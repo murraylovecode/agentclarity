@@ -1,6 +1,6 @@
 import { supabase } from "../client";
 import axios from "axios";
-axios.defaults.baseURL = "http://localhost:3000";
+axios.defaults.baseURL = import.meta.env.VITE_BACKEND_URL;
 
 export async function addAsset(accessToken: string, name: string, type: string, value: number) {
     const response = await axios.post("/addAsset", { name: name, type: type, value: value }, { headers: { Authorization: `Bearer: ${accessToken}` }})
