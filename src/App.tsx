@@ -23,6 +23,8 @@ import PlaidDashboard from "./pages/dashboard/Plaid";
 import SharePage from "./pages/share/SharePage";
 import NotLoggedIn from "./pages/NotLoggedIn";
 import Analytics from "./pages/admin/Analytics";
+import PasswordReset from "./pages/auth/PasswordReset";
+import PasswordChange from "./pages/auth/PasswordChange";
 
 const queryClient = new QueryClient();
 
@@ -39,6 +41,8 @@ const App = () => (
           <Route path="/register" element={<Register />} />
           <Route path="/share/:shareId" element={<SharePage/>} />
           <Route path="/notloggedin" element={<NotLoggedIn />} />
+          <Route path="/passwordreset" element={<PasswordReset />} />
+          <Route path="/passwordchange" element={<PasswordChange />} />
           <Route path="/analytics" element={<Analytics/>} />
           
           {/* App routes (with sidebar) */}

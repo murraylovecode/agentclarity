@@ -12,18 +12,33 @@ import { useQuery } from "@tanstack/react-query";
 
 export default function Login() {
   const navigate = useNavigate();
+
   const [showPassword, setShowPassword] = useState(false);
+  const [showResetSent, setShowResetSent] = useState(false);
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
-  const { data: userId, isFetched } = useQuery(queryUserId())
+  const { data: userId, isFetched } = useQuery(queryUserId());
 
   useEffect(() => {
     if (isFetched && userId) {
-      navigate("/dashboard")
+      navigate("/dashboard");
     }
-  })
+  }, [isFetched, userId, navigate]);
+
+  const handleForgotPassword = async () => {
+    if (email == "") {
+      toast.error("Enter email to reset password");
+    }
+    else {
+      await supabase.auth.resetPasswordForEmail('valid.email@supabase.io', {
+        redirectTo: import.meta.env.VITE_FRONTEND_URL + "/passwordreset",
+      })
+      setShowResetSent(true)
+    }
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -63,105 +78,142 @@ export default function Login() {
       <div className="w-full max-w-md animate-fade-in">
         <Card className="shadow-vig-lg border-border/50">
           <CardHeader className="text-center pb-2">
-            <CardTitle className="text-2xl font-semibold">Welcome back</CardTitle>
+            <CardTitle className="text-2xl font-semibold">
+              {showResetSent ? "Check your inbox" : "Welcome back"}
+            </CardTitle>
+
             <CardDescription className="text-muted-foreground">
-              Sign in to access your wealth intelligence
+              {showResetSent
+                ? "An email with a link to reset your password was sent to the email address associated with your account."
+                : "Sign in to access your wealth intelligence"}
             </CardDescription>
           </CardHeader>
+
           <CardContent className="pt-4">
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="space-y-2">
-                <label htmlFor="email" className="text-sm font-medium text-foreground">
-                  Email
-                </label>
-                <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                  <Input
-                    id="email"
-                    type="email"
-                    placeholder="you@example.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="pl-10"
-                    required
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <label htmlFor="password" className="text-sm font-medium text-foreground">
-                    Password
-                  </label>
-                  <Link
-                    to="/forgot-password"
-                    className="text-sm text-accent hover:text-accent/80 transition-colors"
-                  >
-                    Forgot password?
-                  </Link>
-                </div>
-                <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                  <Input
-                    id="password"
-                    type={showPassword ? "text" : "password"}
-                    placeholder="••••••••"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="pl-10 pr-10"
-                    required
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-                  >
-                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                  </button>
-                </div>
-              </div>
-
-              <Button
-                type="submit"
-                variant="hero"
-                size="lg"
-                className="w-full"
-                disabled={isLoading}
-              >
-                {isLoading ? (
-                  <span className="flex items-center gap-2">
-                    <span className="w-4 h-4 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
-                    Signing in...
-                  </span>
-                ) : (
-                  <span className="flex items-center gap-2">
-                    Sign in
-                    <ArrowRight className="w-4 h-4" />
-                  </span>
-                )}
-              </Button>
-            </form>
-
-            <div className="mt-6 text-center space-y-4">
-              <p className="text-sm text-muted-foreground">
-                Don't have an account?{" "}
-                <Link
-                  to="/register"
-                  className="text-accent hover:text-accent/80 font-medium transition-colors"
+            {showResetSent ? (
+              <div className="space-y-6 text-center py-6">
+                <Button
+                  variant="outline"
+                  className="w-full"
+                  onClick={() => setShowResetSent(false)}
                 >
-                  Create one
-                </Link>
-              </p>
-              
-              <div className="pt-4 border-t border-border">
-                <Link
-                  to="/admin/login"
-                  className="text-xs text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  Admin Login →
-                </Link>
+                  Back to login
+                </Button>
               </div>
-            </div>
+            ) : (
+              <>
+                <form onSubmit={handleSubmit} className="space-y-4">
+                  <div className="space-y-2">
+                    <label
+                      htmlFor="email"
+                      className="text-sm font-medium text-foreground"
+                    >
+                      Email
+                    </label>
+
+                    <div className="relative">
+                      <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+
+                      <Input
+                        id="email"
+                        type="email"
+                        placeholder="you@example.com"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        className="pl-10"
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <label
+                        htmlFor="password"
+                        className="text-sm font-medium text-foreground"
+                      >
+                        Password
+                      </label>
+
+                      <button
+                        type="button"
+                        onClick={handleForgotPassword}
+                        className="text-sm text-accent hover:text-accent/80 transition-colors"
+                      >
+                        Forgot password?
+                      </button>
+                    </div>
+
+                    <div className="relative">
+                      <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+
+                      <Input
+                        id="password"
+                        type={showPassword ? "text" : "password"}
+                        placeholder="••••••••"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        className="pl-10 pr-10"
+                        required
+                      />
+
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                      >
+                        {showPassword ? (
+                          <EyeOff className="w-4 h-4" />
+                        ) : (
+                          <Eye className="w-4 h-4" />
+                        )}
+                      </button>
+                    </div>
+                  </div>
+
+                  <Button
+                    type="submit"
+                    variant="hero"
+                    size="lg"
+                    className="w-full"
+                    disabled={isLoading}
+                  >
+                    {isLoading ? (
+                      <span className="flex items-center gap-2">
+                        <span className="w-4 h-4 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
+                        Signing in...
+                      </span>
+                    ) : (
+                      <span className="flex items-center gap-2">
+                        Sign in
+                        <ArrowRight className="w-4 h-4" />
+                      </span>
+                    )}
+                  </Button>
+                </form>
+
+                <div className="mt-6 text-center space-y-4">
+                  <p className="text-sm text-muted-foreground">
+                    Don't have an account?{" "}
+                    <Link
+                      to="/register"
+                      className="text-accent hover:text-accent/80 font-medium transition-colors"
+                    >
+                      Create one
+                    </Link>
+                  </p>
+
+                  <div className="pt-4 border-t border-border">
+                    <Link
+                      to="/admin/login"
+                      className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+                    >
+                      Admin Login →
+                    </Link>
+                  </div>
+                </div>
+              </>
+            )}
           </CardContent>
         </Card>
       </div>

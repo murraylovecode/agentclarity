@@ -135,7 +135,7 @@ export function AppSidebar() {
         </nav>
 
         {/* Bottom Navigation */}
-        <div className="p-3 space-y-1 border-t border-sidebar-border">
+        <div className="p-3 space-y-1 border-t border-sidebar-border text-sidebar-foreground">
           {bottomNavigation.map((item) => {
             const Icon = item.icon;
             return (
@@ -176,8 +176,8 @@ export function AppSidebar() {
               <ChevronRight className="w-4 h-4" />
             ) : (
               <>
-                <ChevronLeft className="w-4 h-4" />
-                <span className="text-xs">Collapse</span>
+                <ChevronLeft className="w-4 h-4 text-sidebar-foreground" />
+                <span className="text-xs text-sidebar-foreground">Collapse</span>
               </>
             )}
           </Button>

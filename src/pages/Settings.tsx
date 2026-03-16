@@ -21,27 +21,8 @@ const settingsSections = [
     items: [
       { label: "Email", value: "user@example.com", action: "Change" },
       { label: "Password", value: "••••••••", action: "Update" },
-      { label: "Two-Factor Authentication", value: "Enabled", action: "Manage" },
     ],
-  },
-  {
-    title: "Notifications",
-    icon: Bell,
-    items: [
-      { label: "Email Notifications", value: "Enabled", action: "Configure" },
-      { label: "Portfolio Alerts", value: "Daily", action: "Change" },
-      { label: "Deal Reminders", value: "Enabled", action: "Manage" },
-    ],
-  },
-  {
-    title: "Privacy & Security",
-    icon: Shield,
-    items: [
-      { label: "Profile Visibility", value: "Private", action: "Change" },
-      { label: "Data Export", value: "", action: "Export" },
-      { label: "Connected Apps", value: "2 apps", action: "Manage" },
-    ],
-  },
+  }
 ];
 
 export default function Settings() {
@@ -103,26 +84,6 @@ export default function Settings() {
         );
       })}
 
-      {/* Subscription */}
-      <Card className="border-accent/20">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-base">
-            <CreditCard className="w-5 h-5 text-accent" />
-            Subscription
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="font-medium text-foreground">Pro Plan</p>
-              <p className="text-sm text-muted-foreground">$29/month • Next billing: Jan 15, 2025</p>
-            </div>
-            <Button variant="outline" size="sm">
-              Manage Plan
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
 
       {/* Help & Support */}
       <Card>
@@ -134,10 +95,7 @@ export default function Settings() {
         </CardHeader>
         <CardContent className="space-y-3">
           <Button variant="outline" className="w-full justify-start">
-            View Documentation
-          </Button>
-          <Button variant="outline" className="w-full justify-start">
-            Contact Support
+            Contact for Issues
           </Button>
         </CardContent>
       </Card>
