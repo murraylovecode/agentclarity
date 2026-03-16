@@ -14,17 +14,6 @@ import {
 import { supabase } from "@/lib/supabase/client";
 import { toast } from "sonner";
 
-const settingsSections = [
-  {
-    title: "Account",
-    icon: User,
-    items: [
-      { label: "Email", value: "user@example.com", action: "Change" },
-      { label: "Password", value: "••••••••", action: "Update" },
-    ],
-  }
-];
-
 export default function Settings() {
   const navigate = useNavigate();
 
@@ -37,6 +26,17 @@ export default function Settings() {
       navigate("/");
     }
   };
+
+  const settingsSections = [
+  {
+    title: "Account",
+    icon: User,
+    items: [
+      { label: "Email", value: "user@example.com", action: "Change" },
+      { label: "Password", value: "••••••••", action: "Update" },
+    ],
+  }
+];
 
   return (
     <div className="p-6 lg:p-8 space-y-6 max-w-3xl mx-auto">
@@ -74,7 +74,7 @@ export default function Settings() {
                       <p className="text-sm text-muted-foreground">{item.value}</p>
                     )}
                   </div>
-                  <Button variant="ghost" size="sm">
+                  <Button variant="ghost" size="sm" onClick={() => navigate("/passwordchange")}>
                     {item.action}
                   </Button>
                 </div>
