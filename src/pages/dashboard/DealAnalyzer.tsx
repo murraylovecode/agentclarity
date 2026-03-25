@@ -37,7 +37,6 @@ export default function DealAnalyzer() {
   const [analysis, setAnalysis] = useState(false);
 
   const { data: accessToken, isFetched } = useQuery(queryAccessToken())
-  const { data: plaidData } = useQuery({ ...queryTransactions(accessToken), enabled: !!accessToken })
 
   const navigate = useNavigate()
 
@@ -49,27 +48,7 @@ export default function DealAnalyzer() {
   axios.defaults.baseURL = import.meta.env.VITE_BACKEND_URL;
 
   async function getResponse() {
-    if (accessToken && plaidData && question != "") {
-      let totalBankBalances = calculateBankBalancesFromRawData(plaidData[0])
-      let totalInvestment = calculateInvestmentsFromRawData(plaidData[1])
-
-      let totalCreditCard = calculateCreditCardFromRawData(plaidData[2])
-      let totalMortgage = calculateMortgageFromRawData(plaidData[2])
-      let totalLoan = calculateLoanFromRawData(plaidData[2])
-
-      let fullMortgage = calculateDueMortgageFromRawData(plaidData[2])
-      let fullLoan = calculateDueLoanFromRawData(plaidData[2])
-
-      const userData = {
-        "bank_balances": totalBankBalances,
-        "investment": totalInvestment,
-        "credit_card_due": totalCreditCard,
-        "mortgage_payment_due_toay": totalMortgage,
-        "student_loan_payment_due": totalLoan,
-        "total_mortgage_due": fullMortgage,
-        "total_student_loan_due": fullLoan
-      }
-
+    if (accessToken && question != "") {
 
       const investment = {
         "deal_type": dealType,
@@ -77,11 +56,7 @@ export default function DealAnalyzer() {
         "investment_duration": horizon
       }
 
-      const aiAxios = axios.create({
-        baseURL: "https://advaitchirmule2.pythonanywhere.com", withCredentials: true,
-      });
-
-      const response = await aiAxios.post("/chat", { user_data: userData, question: question, investment: investment, context: context });
+      const response = await axios.post("/chat", { question: question, investment: investment, context: context }, { headers: { Authorization: `Bearer: ${accessToken}` }})
 
       if (response.data.success) {
         setAllHistory([...allHistory, response.data.context.at(-1)])
@@ -192,7 +167,7 @@ export default function DealAnalyzer() {
               size="lg"
               className="w-full"
               onClick={handleAnalyze}
-              disabled={isAnalyzing || !dealType || !amount || !accessToken || !plaidData}
+              disabled={isAnalyzing || !dealType || !amount || !accessToken}
             >
               {isAnalyzing ? (
                 <span className="flex items-center gap-2">

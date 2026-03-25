@@ -242,12 +242,6 @@ export default function LandingPage() {
               <span className="text-foreground font-semibold">AgentClarity</span>
             </div>
             <div className="flex items-center gap-6">
-              <Link
-                to="/admin/login"
-                className="text-xs text-muted-foreground hover:text-foreground transition-colors"
-              >
-                Admin Login →
-              </Link>
               <p className="text-sm text-muted-foreground">
                 © {new Date().getFullYear()} AgentClarity. All rights reserved.
               </p>
